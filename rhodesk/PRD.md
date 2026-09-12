@@ -77,7 +77,7 @@ by design, not a workaround: Rho's v1 API is read-only.
   │               │  diff against the previous run, store what moved
   └───────┬───────┘
           ▼
-      SQLite  ──────────────►  Web UI (6 screens)
+      SQLite  ──────────────►  Web UI (7 screens)
           │                         │
           │                         ▼
           │                 ┌───────────────┐
@@ -107,6 +107,7 @@ ElevenLabs runs that.
 | `llm.py` | Anthropic / OpenAI / Groq, JSON mode, records failures |
 | `voice.py` | ElevenLabs sessions, spoken number forms, call simulation |
 | `history.py` | Run records, per-run snapshots, the run-over-run diff |
+| `today.py` | The morning briefing, derived from everything above |
 | `settings.py` | Persisted settings that actually gate the agent |
 | `api.py` | FastAPI routes, webhooks, the agent's tool endpoint |
 | `static/` | The UI, in Rho's real brand tokens |
@@ -156,8 +157,15 @@ from the model, which is what stops the agent looking up someone else's invoice.
 - **Honest degradation.** A run that could not resolve entities or could not
   research anybody says so, and the diff suppresses whatever that stage feeds
   rather than presenting our own outage as the customer's news.
-- 6 screens: Counterparties, What changed, Collect queue, Signals, Calls,
-  Agent settings.
+- **Today.** The morning briefing: what needs a person, what the desk handled
+  on its own, what it will work next. An edit of the changes feed, not a
+  second copy of it. Cover leads, approvals follow, and unreachable
+  counterparties collapse into one row rather than twelve identical ones.
+- **Phone calls close themselves.** There is no post-call webhook, so a phone
+  call used to sit in `live` forever and never reach the log. Today polls
+  ElevenLabs for the conversation instead, which needs no public URL.
+- 7 screens: Today, Counterparties, What changed, Collect queue, Signals,
+  Calls, Agent settings.
 - 13-artboard design canvas in Rho's real brand system.
 
 ## 6. What is missing
@@ -176,8 +184,7 @@ from the model, which is what stops the agent looking up someone else's invoice.
 - No auth. Anyone who can reach the port can read the ledger.
 - Single business per token. Multi-entity is not modelled.
 - Post-call webhook never exercised.
-- Two screens exist in the canvas but not the app: Today (morning briefing) and
-  the first-run Connect flow. Today is now unblocked: the diff it needs exists.
+- The first-run Connect flow exists in the canvas but not the app.
 - Tests cover the diff only. Nothing covers `extract`, `classify` or the API.
 - Nothing is ever written back to a counterparty after a call. A promise to
   pay is captured in the transcript and then nothing watches for it.
@@ -187,21 +194,18 @@ from the model, which is what stops the agent looking up someone else's invoice.
 
 Ordered by value per hour.
 
-1. **Today screen.** The morning briefing: what happened overnight, what needs
-   a human. Designed in the canvas, and now buildable, because the diff it
-   reads already exists. What changed is the raw feed; Today is the edit of it.
-2. **Outbound phone.** Number, webhook URL, voicemail detection. Turns a demo
-   into a product. Carrier is already switchable; what is missing is an
-   account with a number on it. Exotel needs its Voicebot applet enabled,
-   which their support does in 1 to 2 business days.
-3. **Auth.** Any real deployment needs it before it touches a real ledger.
-4. **Email fallback.** A third of counterparties have no phone number. Drafting
-   the chase email is the same brief with a different channel.
-5. **Scheduled runs.** The desk should run at 06:00 without being asked.
-6. **Close the loop after a call.** A commitment extracted from a transcript
+1. **Close the loop after a call.** A commitment extracted from a transcript
    should become something the next run watches for, and the call should leave
-   a mark on the counterparty rather than only on the call log.
-7. **Tests** on `extract` and `classify`, which carry the rest of the
+   a mark on the counterparty rather than only on the call log. Northwind
+   agreeing to pay by Thursday currently changes nothing about Thursday.
+2. **Contact enrichment.** Nobody on live data has a phone number, so the
+   product's headline verb has no input. Tavily can find these.
+3. **Auth.** Any real deployment needs it before it touches a real ledger.
+4. **Email fallback.** Most counterparties have no phone number. Drafting the
+   chase email is the same brief with a different channel.
+5. **Scheduled runs.** The desk should run at 06:00 without being asked, which
+   is the assumption Today's copy already makes.
+6. **Tests** on `extract` and `classify`, which carry the rest of the
    arithmetic.
 
 ## 8. Ideas to discuss

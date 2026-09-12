@@ -10,7 +10,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import config, db, history, pipeline, settings as desk_settings, voice
+from . import config, db, history, pipeline, settings as desk_settings, today as today_module, voice
 from .llm import LLMClient
 from . import rho as rho_module
 from .rho import RhoError
@@ -43,6 +43,7 @@ def status() -> dict:
         "calls": len(db.query("calls")),
     }
     from .tavily import last_error as tavily_error
+    from .voice import last_error as voice_error
     # Rows outlive the run that wrote them now, so a plain COUNT would report
     # every counterparty ever seen rather than the ones on the desk today.
     where, params = _current_scope()
@@ -52,6 +53,8 @@ def status() -> dict:
         services["llm"]["last_error"] = llm_error
     if tavily_error:
         services["tavily"]["last_error"] = tavily_error
+    if voice_error:
+        services["voice"]["last_error"] = voice_error
         services["tavily"]["note"] = "key set, but " + tavily_error
     current = history.current_run()
     last = history.run(current) if current else None
@@ -499,6 +502,20 @@ def queue() -> dict:
         "calls_per_run": cfg["calls_per_run"],
         "already_called": sum(1 for i in items if i["last_call"]),
     }
+
+
+# --- today -----------------------------------------------------------------
+
+@app.get("/api/today")
+def today() -> dict:
+    """The morning briefing. Reconciles any phone call nobody closed first,
+    otherwise the screen reports work as still in progress when it finished
+    twenty minutes ago."""
+    try:
+        voice.reconcile()
+    except Exception:  # noqa: BLE001 - a briefing must render even if this fails
+        pass
+    return today_module.brief(status().get("services", {}))
 
 
 # --- history ---------------------------------------------------------------

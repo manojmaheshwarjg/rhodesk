@@ -3,7 +3,7 @@ const money = (c) => "$" + ((c || 0) / 100).toLocaleString(undefined, { minimumF
 const trim = (s, n) => { s = String(s ?? ""); if (s.length <= n) return s; const cut = s.slice(0, n); const sp = cut.lastIndexOf(" "); return (sp > n * 0.6 ? cut.slice(0, sp) : cut) + "…"; };
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
-let state = { view: "counterparties", posture: "all", rows: [], status: null, callTimer: null, runId: null };
+let state = { view: "today", posture: "all", rows: [], status: null, callTimer: null, runId: null };
 
 async function api(path, opts) {
   const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
@@ -65,12 +65,81 @@ async function runDesk() {
 // --- views -----------------------------------------------------------------
 
 async function render() {
+  if (state.view === "today") return renderToday();
   if (state.view === "counterparties") return renderCounterparties();
   if (state.view === "changes") return renderChanges();
   if (state.view === "queue") return renderQueue();
   if (state.view === "signals") return renderSignals();
   if (state.view === "settings") return renderSettings();
   return renderCalls();
+}
+
+const CLOCK = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+async function renderToday() {
+  $("title").textContent = "Today";
+  $("subtitle").textContent = "Reading the desk";
+  $("filters").innerHTML = "";
+  $("tiles").innerHTML = "";
+  $("content").innerHTML = `<div class="empty">Reading the desk…</div>`;
+
+  const d = await api("/api/today");
+  $("title").textContent = `${d.greeting}`;
+  $("subtitle").textContent = d.headline;
+
+  const w = d.week;
+  $("tiles").innerHTML = [
+    ["Recovered this week", money(w.recovered), "invoices paid off", "var(--mint-t)"],
+    ["Calls made", String(w.calls), `${w.real_calls} on a real line`, "var(--gr)"],
+    ["Answered", String(w.answered), w.calls ? `of ${w.calls}` : "none yet", "var(--gr)"],
+    ["In the queue", String(d.queue_total), "ranked by expected recovery", "var(--gr)"],
+  ].map(([l, v, m, c]) =>
+    `<div class="tile"><p class="l">${l}</p><p class="v">${v}</p><p class="m" style="color:${c}">${m}</p></div>`).join("");
+
+  const needs = d.needs_you.length
+    ? `<div class="card" style="padding:0">${d.needs_you.map((n) => `
+        <div class="ny" ${n.counterparty_id ? `data-call="${esc(n.counterparty_id)}" style="cursor:pointer"` : ""}>
+          <span class="flag ${esc(n.weight)}"></span>
+          <div style="flex-grow:1;min-width:0">
+            <h4>${esc(n.title)}</h4>
+            <p>${esc(n.detail)}</p>
+          </div>
+          ${n.amount ? `<div class="amt">${money(n.amount)}</div>` : ""}
+        </div>`).join("")}</div>`
+    : `<div class="card"><p class="allgood">Nothing needs a decision from you. The desk has the rest.</p></div>`;
+
+  const handled = d.handled.length
+    ? `<div class="card" style="padding:0">${d.handled.map((h) => `
+        <div class="tl" ${h.counterparty_id ? `data-open="${esc(h.counterparty_id)}" style="cursor:pointer"` : ""}>
+          <span class="pip ${esc(h.kind === "call" ? "made" : h.weight || "")}"></span>
+          <div style="flex-grow:1;min-width:0">
+            <h5>${esc(h.title)}${h.simulated ? ` <span class="bd watch">simulated</span>` : ""}</h5>
+            ${h.detail ? `<p>${esc(trim(h.detail, 180))}</p>` : ""}
+          </div>
+          <time>${CLOCK(h.at)}</time>
+        </div>`).join("")}</div>`
+    : `<div class="card"><p class="allgood">Nothing since the last run.</p></div>`;
+
+  const queued = d.queued.length
+    ? `<div class="card" style="padding:0">${d.queued.map((q) => `
+        <div class="qd" data-call="${esc(q.id)}" style="cursor:pointer">
+          <span class="bd ${esc(q.posture)}">${esc(q.posture)}</span>
+          <span class="nm">${esc(q.display_name)}</span>
+          <span class="v">${money(q.outstanding)}</span>
+        </div>`).join("")}</div>`
+    : `<div class="card"><p class="allgood">Queue is empty.</p></div>`;
+
+  $("content").innerHTML = `
+    <p class="sect">Needs you</p>
+    ${needs}
+    <div class="two" style="margin-top:22px">
+      <div><p class="sect">Handled since the last run</p>${handled}</div>
+      <div><p class="sect">Queued next</p>${queued}</div>
+    </div>`;
 }
 
 async function renderCounterparties() {
@@ -739,6 +808,8 @@ document.addEventListener("click", (e) => {
     render();
     return;
   }
+  const openRow = e.target.closest("[data-open]");
+  if (openRow) { openDossier(openRow.dataset.open); return; }
   const runPill = e.target.closest("[data-run]");
   if (runPill) { state.runId = Number(runPill.dataset.run); renderChanges(); return; }
   const chRow = e.target.closest(".chrow[data-id]");

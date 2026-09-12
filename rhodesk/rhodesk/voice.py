@@ -68,14 +68,23 @@ def say_money(cents: int) -> str:
     return out
 
 
+# Prefixes that already mean "invoice". The agent says the word "invoice"
+# before reading the reference, so spelling out I-N-V adds three syllables of
+# nothing and makes the number sound harder than it is.
+REDUNDANT_PREFIXES = {"INV", "INVC", "INVOICE", "IN"}
+
+
 def say_reference(ref: str) -> str:
-    """INV-2026-0001 becomes 'I N V, twenty twenty six, zero zero zero one',
-    which is how a person reads a reference code down a phone line."""
+    """INV-2026-0001 becomes 'twenty twenty six, zero zero zero one', which is
+    how a person reads a reference code down a phone line. A leading INV is
+    dropped rather than spelled, because the sentence around it already says
+    invoice; a meaningful prefix is still spelled out."""
     if not ref:
         return ""
     groups = []
-    for chunk in re.split(r"[^A-Za-z0-9]+", ref):
-        if not chunk:
+    chunks = [c for c in re.split(r"[^A-Za-z0-9]+", ref) if c]
+    for index, chunk in enumerate(chunks):
+        if index == 0 and len(chunks) > 1 and chunk.upper() in REDUNDANT_PREFIXES:
             continue
         if chunk.isalpha():
             groups.append(" ".join(chunk.upper()))
@@ -92,12 +101,28 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# Last outbound-call failure, surfaced in /api/status. A refused call falls
+# back to simulation and otherwise looks identical to a working demo, which is
+# how a 404 on the endpoint path went unnoticed once already.
+last_error: str = ""
+
+# The URL segment each carrier uses. These are NOT just the config values:
+# ElevenLabs spells the SIP trunk path with a hyphen while the env var uses an
+# underscore, and passing the env value straight through builds a 404 that
+# looks exactly like a refused call.
+PROVIDER_PATHS = {
+    "twilio": "twilio",
+    "exotel": "exotel",
+    "sip_trunk": "sip-trunk",
+    "sip-trunk": "sip-trunk",
+}
+
+
 def outbound_provider() -> str:
     """The URL segment for the configured carrier. Unknown values fall back to
     twilio rather than building a 404, because a typo in an env var should not
     look like an ElevenLabs outage."""
-    provider = config.ELEVENLABS_TELEPHONY
-    return provider if provider in config.TELEPHONY_PROVIDERS else "twilio"
+    return PROVIDER_PATHS.get(config.ELEVENLABS_TELEPHONY, "twilio")
 
 
 class VoiceClient:
@@ -175,8 +200,17 @@ class VoiceClient:
                 resp.raise_for_status()
                 data = resp.json()
         except Exception as exc:  # noqa: BLE001 - fall back rather than fail the demo
+            global last_error
+            detail = str(exc)[:300]
+            resp = getattr(exc, "response", None)
+            if resp is not None:
+                detail = f"{resp.status_code}: {resp.text[:300]}"
+            last_error = f"{outbound_provider()} - {detail}"
+            # Printed as well as stored: a silent fallback to simulation is
+            # indistinguishable from a working demo until someone picks up.
+            print(f"[voice] outbound call refused: {last_error}", flush=True)
             return {"provider_ref": f"sim_{uuid.uuid4().hex[:10]}", "simulated": True,
-                    "error": str(exc)[:300]}
+                    "error": detail}
         return {"provider_ref": data.get("conversation_id") or data.get("callSid") or "",
                 "simulated": False, "raw": data}
 
@@ -462,6 +496,48 @@ def extract_outcome(transcript: list[dict], counterparty: str) -> dict:
                                  fallback, max_tokens=900)
 
 
+def turns_from(data: dict) -> list[dict]:
+    """ElevenLabs writes {role, message}; the rest of the app speaks
+    {role, text} with roles agent/human. One shape, wherever it arrived from."""
+    turns = []
+    for turn in (data.get("transcript") or []):
+        role = "agent" if turn.get("role") in ("agent", "assistant") else "human"
+        text = turn.get("message") or turn.get("text") or ""
+        if text:
+            turns.append({"role": role, "text": text})
+    return turns
+
+
+def reconcile(max_calls: int = 10) -> int:
+    """Close out phone calls that nobody told us had ended.
+
+    A browser call posts its own transcript back when the page closes it, and
+    a webhook would do the same for a phone call. There is no webhook here, so
+    a phone call stays "live" forever and never reaches the call log. This
+    polls ElevenLabs for the conversation instead, which needs no public URL.
+
+    Returns how many calls were closed.
+    """
+    client = VoiceClient()
+    if not client.live:
+        return 0
+    closed = 0
+    for call in db.query("calls", "state = ?", ("live",), "created_at DESC")[:max_calls]:
+        ref = call.get("provider_ref") or ""
+        if not ref.startswith("conv_"):
+            continue                      # simulated, or never reached a carrier
+        data = client.fetch_conversation(ref)
+        if not data or data.get("status") not in ("done", "failed", "ended"):
+            continue                      # still in progress, leave it alone
+        turns = turns_from(data)
+        cp = db.one("counterparties", call["counterparty_id"]) or {}
+        outcome = extract_outcome(turns, cp.get("display_name", "the counterparty"))
+        db.set_fields("calls", call["id"], state="done", ended_at=_now(),
+                      transcript=json.dumps(turns), outcome=json.dumps(outcome))
+        closed += 1
+    return closed
+
+
 def ingest_webhook(body: dict) -> str | None:
     """Accept an ElevenLabs post-call webhook and fold it into the call row.
     Returns the call id it matched, or None."""
@@ -474,13 +550,7 @@ def ingest_webhook(body: dict) -> str | None:
         return None
     call = rows[0]
 
-    turns = []
-    for turn in (data.get("transcript") or []):
-        role = "agent" if turn.get("role") in ("agent", "assistant") else "human"
-        text = turn.get("message") or turn.get("text") or ""
-        if text:
-            turns.append({"role": role, "text": text})
-
+    turns = turns_from(data)
     analysis = data.get("analysis") or {}
     outcome = {
         "result": analysis.get("call_successful", "unknown"),

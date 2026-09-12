@@ -111,6 +111,34 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .rp{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--gr);font-variant-numeric:tabular-nums}
 .rp.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .rp .deg{color:var(--amber-t)}
+
+/* today */
+.two{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
+@media (max-width:1100px){.two{grid-template-columns:1fr}}
+.sect{font-size:12px;color:var(--gr2);letter-spacing:.02em;text-transform:uppercase;margin:0 0 10px}
+.ny{display:flex;gap:14px;padding:15px 18px;border-bottom:1px solid var(--ln-s);align-items:flex-start}
+.ny:last-child{border-bottom:0}
+.ny .flag{width:3px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.ny .flag.urgent{background:var(--red-t)}
+.ny .flag.attention{background:var(--amber-t)}
+.ny h4{margin:0;font-size:15px;font-weight:500}
+.ny p{margin:4px 0 0;font-size:13px;color:var(--gr);line-height:1.5}
+.ny .amt{flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums;font-size:15px;font-weight:500}
+.tl{display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--ln-s);align-items:flex-start}
+.tl:last-child{border-bottom:0}
+.tl .pip{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0;background:var(--gr3)}
+.tl .pip.made{background:var(--mint-d)}
+.tl .pip.urgent{background:var(--red-t)}
+.tl .pip.attention{background:var(--amber-t)}
+.tl .pip.good{background:var(--green-t)}
+.tl h5{margin:0;font-size:14px;font-weight:500}
+.tl p{margin:3px 0 0;font-size:13px;color:var(--gr);line-height:1.5}
+.tl time{font-size:12px;color:var(--gr3);flex-shrink:0;font-variant-numeric:tabular-nums}
+.qd{display:flex;align-items:center;gap:11px;padding:11px 18px;border-bottom:1px solid var(--ln-s)}
+.qd:last-child{border-bottom:0}
+.qd .nm{flex-grow:1;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qd .v{font-variant-numeric:tabular-nums;font-size:14px;flex-shrink:0}
+.allgood{padding:28px 20px;text-align:center;color:var(--gr);font-size:14px}
 .rule{display:flex;gap:10px;padding:8px 0;font-size:14px;line-height:1.5}
 .tick{flex-shrink:0;margin-top:3px}
 
@@ -175,7 +203,8 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
     </div>
     <div class="org"><span class="dot" id="orgInitials">FT</span><span id="orgName">FusionTech</span></div>
     <div class="sec">Desk</div>
-    <button class="nv on" data-view="counterparties">Counterparties</button>
+    <button class="nv on" data-view="today">Today</button>
+    <button class="nv" data-view="counterparties">Counterparties</button>
     <button class="nv" data-view="changes">What changed</button>
     <button class="nv" data-view="queue">Collect queue</button>
     <button class="nv" data-view="signals">Signals</button>

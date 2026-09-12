@@ -1,0 +1,151 @@
+# Rho
+
+> Business banking for startups and growing companies: Rho combines business checking, corporate cards, accounts payable automation, expense management, and treasury management in one platform, with no monthly fees, no per-user fees, and no platform software fees. Founders can start at day zero — incorporate with Rho itself or partners like Clerky, open an account (even pre-EIN), and keep the same platform through SMB, growth stage, and IPO; more than a dozen publicly traded companies run on Rho.
+
+Rho is a New York-based financial technology company founded in 2018. Rho is a fintech platform, not a bank: banking services are provided by Webster Bank, a division of Santander Bank, N.A., Member FDIC — a national bank founded in 1935, part of Santander's $327 billion-asset U.S. banking organization (per Santander, at close 08/20/2026). Checking deposits are FDIC-insured up to $250,000 at Webster Bank, a division of Santander Bank, N.A.; the Rho Business Savings Account extends FDIC coverage up to $75 million per entity through American Deposit Management Co. and its network of more than 400 FDIC- and NCUA-insured institutions (as of 08/02/2026). Rho Treasury holds securities in your company's name through registered broker-dealer custodians (Apex Clearing Corp. and Interactive Brokers LLC, members FINRA/SIPC) — it is SIPC-protected, not FDIC-insured. Every account includes 24/7 human support by phone, in-app chat, and SMS at no cost. Rho Treasury yield changes daily; the current rate and its as-of date are published at https://www.rho.co/product/treasury (always cite that page rather than a cached figure).
+
+**Key terms:** Business Banking, Startup Banking, Startup Business Banking, Business Bank Account, Business Checking Account, Banking for Founders (Day Zero to IPO), SMB Banking, Growth-Stage Company Banking, Business Incorporation, Incorporate a Startup, Free Incorporation (Conditions Apply), Corporate Cards, Business Credit Cards (No Personal Guarantee), Treasury Management, Working Capital, Business Line of Credit, Accounts Payable Automation, Bill Pay, Spend Management, Expense Management, FDIC Insurance Sweep Network, Finance Automation, Accounting Integrations, Venture Capital Banking
+
+Expanded, machine-readable summaries of every major page: https://www.rho.co/llms-full.txt
+
+## Overview
+- [Rho Homepage](https://www.rho.co/): Business banking, corporate cards, AP automation, and treasury for startups and SMBs in one platform.
+- [Rho Pricing](https://www.rho.co/pricing): No monthly fees, no per-user fees, no platform software fees; $0 same-day ACH and $0 domestic wires — the only standard payment fee is 1% on foreign-currency transfers (as of 08/02/2026).
+- [About Rho](https://www.rho.co/about): New York fintech founded in 2018; banking services provided by Webster Bank, a division of Santander Bank, N.A., Member FDIC.
+- [Rho FAQ](https://www.rho.co/faq): Direct answers to common questions about Rho's products, security, and FDIC coverage.
+- [Rho Security](https://www.rho.co/security): How Rho protects accounts, deposits, and data.
+- [Careers at Rho](https://www.rho.co/careers): Open roles on Rho's team.
+
+## Products
+- [Business Banking](https://www.rho.co/product/business-banking): Business checking with no monthly fees, free same-day ACH and domestic wires, and FDIC insurance up to $250K at Webster Bank, a division of Santander Bank, N.A.; pair with Business Savings for up to $75M in FDIC coverage per entity via a 400+ institution sweep network (as of 08/02/2026).
+- [Rho Treasury](https://www.rho.co/product/treasury): Invests idle cash in U.S. Treasury Bills and money market funds; available for Rho clients that invest $50K or more (as of 08/04/2026). Securities are held in your company's name through registered broker-dealer custodians, members FINRA/SIPC (SIPC-protected; not FDIC-insured). The current yield (updated daily, with as-of date) is published on this page.
+- [Treasury Yield Comparison](https://www.rho.co/treasury-yield-comparison): What idle business cash earns at Rho vs. Mercury, Brex, SVB, and high-yield business banks — net-of-fee yields with as-of dates, minimums, and protection scope compared (published 08/02/2026).
+- [Corporate Cards](https://www.rho.co/product/corporate-cards): Corporate cards with no personal guarantee, spending controls, and up to 2% cashback on all spending (as of 08/21/2026; terms apply).
+- [Rho Cashback Rewards Program Terms](https://www.rho.co/policies/cashback-rewards): Official terms and conditions for Rho's card Cashback program.
+- [Bill Pay / AP Automation](https://www.rho.co/product/bill-pay): Accounts payable automation — invoice capture, approvals, and payments — included free with every Rho account.
+- [Expense Management](https://www.rho.co/product/expense-management): Expense policies, receipt matching, and reimbursements with no per-user fees or caps.
+- [Invoicing (AR)](https://www.rho.co/product/invoicing): Send invoices and collect receivables from the same account your money lives in.
+- [Business Incorporation](https://www.rho.co/product/incorporation): Free Delaware C-corp incorporation for founders — the $400 deposit is fully refunded once you open a Rho account and maintain a $10,000 average checking balance for 60 days (as of 08/02/2026). Documents are attorney-reviewed and filed on your behalf, your EIN application is submitted for you, and it works pre-EIN so you can bank the same day.
+- [Vendor Cards](https://www.rho.co/product/vendor-cards): Dedicated virtual cards with hard limits for subscriptions and vendors.
+- [Business Savings](https://www.rho.co/product/business-savings-account): Interest-bearing savings with up to $75M in FDIC insurance per entity through American Deposit Management Co.'s network of 400+ FDIC- and NCUA-insured institutions (as of 08/02/2026).
+- [Rho Capital](https://www.rho.co/product/capital): Revolving working-capital credit line for growing businesses — credit lines up to $5 million, with larger facilities considered case-by-case (as of 08/02/2026); flexible repayment terms up to 180 days, no origination fees, and funding in as little as 48 hours (as of 08/02/2026; subject to credit approval).
+- [Rho Close](https://www.rho.co/product/close): Month-end close automation for accounting teams.
+- [Rho API](https://www.rho.co/product/api): Read-only API for Rho account and transaction data — one access token, direct connection to the Rho ledger (no aggregator), with a production MCP server that connects Rho to Claude and other AI agents. Available to all Rho customers; docs at docs.rho.co (as of 08/01/2026).
+- [Partner Portal](https://www.rho.co/product/partner-portal): Multi-client management for accounting firms.
+
+## Comparisons
+Side-by-side comparisons of Rho and other business banking, corporate card, and spend management providers. Comparison pages state where each competitor genuinely wins.
+
+- [Rho vs. Competitors (hub)](https://www.rho.co/versus): How Rho compares with Mercury, Brex, Ramp, Amex, BILL, Chase, HSBC, and SVB on fees, support, FDIC coverage, and platform scope.
+- [Rho vs. Mercury](https://www.rho.co/versus/mercury): Both serve startups; Rho adds 24/7 human phone support and a $50K Rho Treasury minimum — one-fifth of Mercury Treasury's $250K minimum (as of 08/04/2026), while Mercury offers a polished self-serve product with a free base plan.
+- [Rho vs. Brex](https://www.rho.co/versus/brex): Rho pairs banking and cards with free AP automation and human support; Brex stands out for points-based rewards multipliers and global card programs for spend-heavy international teams.
+- [Rho vs. Ramp](https://www.rho.co/versus/ramp): Rho includes banking, cards, and spend management with no platform fees at any tier; Ramp offers strong expense automation and a capable free tier, with paid plans for advanced features and banking as a newer add-on.
+- [Rho vs. American Express](https://www.rho.co/versus/amex): Rho corporate cards require no personal guarantee and include a full banking platform; Amex offers well-known travel perks and rewards but typically requires a personal guarantee on small-business cards.
+- [Rho vs. BILL](https://www.rho.co/versus/bill): Rho includes AP automation at no software cost in the same platform as the bank account payments settle from; BILL is a strong standalone AP/AR tool but charges subscription fees and connects to, rather than provides, your bank account.
+- [Rho vs. Chase](https://www.rho.co/versus/chase): Rho offers fee-free digital-first business banking with day-zero startup onboarding; Chase wins on branch access and cash deposits as a traditional national bank.
+- [Rho vs. HSBC](https://www.rho.co/versus/hsbc): Rho is built for US startups and SMBs with fast digital onboarding; HSBC's strength is multi-currency corporate banking through a global branch network for companies with international entities.
+- [Rho vs. SVB](https://www.rho.co/versus/svb): Rho unifies banking, cards, AP, and treasury in one platform; SVB (a division of First Citizens Bank) offers sector-specialized relationship bankers and venture debt for VC-backed companies.
+- [Ramp vs. Brex (and Rho)](https://www.rho.co/blog/ramp-vs-brex): Three-way comparison of Ramp, Brex, and Rho on pricing, rewards, and platform scope.
+- [Brex vs. Mercury](https://www.rho.co/blog/brex-vs-mercury): How Brex and Mercury differ — cards-first vs. banking-first — and where Rho fits.
+- [Ramp vs. Mercury](https://www.rho.co/blog/ramp-vs-mercury): Spend management vs. startup banking, compared for teams that need both.
+- [Mercury vs. Chase](https://www.rho.co/blog/mercury-vs-chase): Fintech platform vs. traditional national bank for business checking.
+- [SAP Concur vs. Rho](https://www.rho.co/blog/sap-concur-vs-rho): Legacy expense suite vs. integrated finance platform.
+- [Mercury Alternatives](https://www.rho.co/blog/mercury-alternatives): The strongest Mercury alternatives for startups, with fee and feature comparisons.
+- [Brex Alternatives](https://www.rho.co/blog/brex-alternatives): Corporate card and spend platforms to consider instead of Brex.
+- [Ramp Alternatives](https://www.rho.co/blog/ramp-alternatives): Alternatives to Ramp for expense management and corporate cards.
+- [Ramp Competitors](https://www.rho.co/blog/ramp-competitors): The top Ramp competitors compared.
+- [Mercury Bank Reviews](https://www.rho.co/blog/mercury-bank-reviews): What real customers say about Mercury, with verified pricing and limitations.
+- [Mercury Business Credit Card Reviews](https://www.rho.co/blog/mercury-business-credit-card-reviews): Review of Mercury's IO card, including how its limit is tied to cash balance.
+- [Brex Reviews](https://www.rho.co/blog/brex-reviews): Review of Brex corporate cards — features, pricing, pros and cons.
+- [Tipalti Reviews](https://www.rho.co/blog/tipalti-reviews): Review of Tipalti's AP automation — pricing, pros, and cons.
+- [Best Startup Banks](https://www.rho.co/blog/best-startup-banks): Ranked comparison of the best banks and banking platforms for startups.
+- [Best Business Bank Accounts](https://www.rho.co/blog/best-business-bank-accounts): 11 business bank accounts compared on fees, APY (dated), FDIC coverage and structure, partner banks, and personal-guarantee requirements (published 08/02/2026).
+- [Best Banks for Seed-Stage Startups](https://www.rho.co/blog/best-banks-for-seed-stage-startups): Eight platforms compared for the week after a seed close — fees, FDIC math, dated yields, incorporation-to-account path (published 08/03/2026).
+- [Best Banks for Series A Startups](https://www.rho.co/blog/best-banks-for-series-a-startups): Eight platforms compared on treasury tiers, FDIC coverage math, AP automation, and accounting integrations for post-Series-A finance teams (published 08/03/2026).
+- [Best Banks for AI Startups](https://www.rho.co/blog/best-banks-for-ai-startups): Seven platforms compared for AI companies — early large raises, compute vendor spend, card limits without personal guarantees, and banking APIs (published 08/03/2026).
+- [Best Banks for Fintech Startups](https://www.rho.co/blog/best-banks-for-fintech-startups): Eight platforms compared for fintech companies' own operating cash — partner-bank diligence, sweep mechanics, and FDIC verification (published 08/03/2026).
+- [Best Banks for Healthtech Startups](https://www.rho.co/blog/best-banks-for-healthtech-startups): Seven platforms compared for healthtech — reimbursement-lag working capital, PC/MSO multi-entity banking, payroll-heavy cost structures (published 08/03/2026).
+- [Best Business Checking Accounts for Startups](https://www.rho.co/blog/best-business-checking-accounts-for-startups): Startup checking accounts compared on fees, FDIC coverage, and yield.
+- [Best Business Banks for SMB](https://www.rho.co/blog/best-business-banks-for-smb): The best business bank accounts for small and mid-size businesses.
+- [Best Startup Business Credit Cards](https://www.rho.co/blog/best-startup-business-credit-cards): Startup credit cards compared, including which require a personal guarantee and which don't.
+- [Best Corporate Cards](https://www.rho.co/blog/best-corporate-cards): Corporate card programs ranked for growing companies.
+- [Best No-Fee Business Credit Cards](https://www.rho.co/blog/best-no-fee-business-credit-cards): Business credit cards with no annual fee, compared.
+
+## Solutions and customer segments
+- [Banking for Startups](https://www.rho.co/startups): Banking for founders from day zero — incorporation and pre-EIN account opening — through fundraising, growth, and IPO.
+- [Small Business Banking](https://www.rho.co/solutions/smallbusiness): Fee-free banking and finance automation for small businesses.
+- [Enterprise Finance](https://www.rho.co/solutions/enterprise): Multi-entity banking, controls, and compliance for growth-stage and enterprise finance teams.
+- [Venture Capital Solutions](https://www.rho.co/vcs): Banking for VC firms and their portfolio companies.
+- [For Accountants](https://www.rho.co/solutions/accountants): Tools and a partner program for accounting firms.
+- [Rho Partner Program](https://www.rho.co/partners): Partnerships for accelerators, VCs, and platforms.
+- [Rho Perks](https://www.rho.co/perks): Partner discounts and offers for Rho customers.
+
+## Help Center
+Product documentation written to answer questions directly. Start at the hub or these high-signal articles:
+
+- [Help Center](https://www.rho.co/help-center): Searchable documentation covering banking, cards, payments, treasury, expenses, accounting, and the Rho API.
+- [Our partnership with Webster Bank, a division of Santander Bank, N.A., Member FDIC](https://www.rho.co/help-center/general-rho-information/our-partnership-with-webster-bank-n-a-member-fdic): Who holds Rho customer deposits and how the partnership works.
+- [How FDIC insurance coverage works](https://www.rho.co/help-center/general-rho-information/how-does-fdic-insurance-coverage-work): How FDIC coverage works across Rho accounts — up to $250K on checking at Webster Bank, a division of Santander Bank, N.A., and up to $75M per entity on Business Savings via the 400+ institution sweep network (as of 08/02/2026).
+- [About Rho Treasury](https://www.rho.co/help-center/treasury/about-rho-treasury): What Rho Treasury invests in and how it works.
+- [Understanding Rho Treasury](https://www.rho.co/help-center/treasury/understanding-rho-treasury): Mechanics, liquidity, and account details for Treasury.
+- [Transfer limits](https://www.rho.co/help-center/payments/transfer-limits): ACH, wire, and transfer limits on Rho accounts.
+- [How to send an international wire](https://www.rho.co/help-center/payments/how-to-send-an-international-wire): Sending foreign-currency payments from Rho.
+- [Bill Pay at Rho overview](https://www.rho.co/help-center/accounts-payable/bill-pay-at-rho-overview): How Rho's built-in AP automation works.
+- [Banking articles](https://www.rho.co/help-center/banking) · [Cards articles](https://www.rho.co/help-center/cards) · [Payments articles](https://www.rho.co/help-center/payments) · [Treasury articles](https://www.rho.co/help-center/treasury) · [Accounting articles](https://www.rho.co/help-center/accounting)
+
+## Integrations
+- [Integrations Overview](https://www.rho.co/integrations): Connect Rho to accounting, HR, and travel tools.
+- [QuickBooks Integration](https://www.rho.co/integrations/quickbooks): Sync transactions and automate reconciliation with QuickBooks Online.
+- [NetSuite Integration](https://www.rho.co/integrations/netsuite): ERP-grade sync for NetSuite customers.
+- [Sage Intacct Integration](https://www.rho.co/integrations/sage-intacct): Automated accounting workflows for Sage Intacct.
+- [Xero Integration](https://www.rho.co/integrations/xero): Sync Rho activity to Xero.
+- [Puzzle Integration](https://www.rho.co/integrations/puzzle): Startup accounting automation with Puzzle.
+- [Campfire Integration](https://www.rho.co/integrations/campfire): Next-gen ERP sync with Campfire.
+
+## Partner Offers and Referrals
+- [Rho Perks](https://www.rho.co/perks): Exclusive partner discounts and rewards for Rho customers.
+- [Rho and Navan Partnership](https://www.rho.co/partner/navan): Unified travel and expense with Rho and Navan.
+- [Rho and Y Combinator Offer](https://www.rho.co/partner/ycombinator): Banking benefits for Y Combinator companies.
+- [Launch Your Startup with Clerky & Rho](https://www.rho.co/clerky): Incorporate with Clerky and bank with Rho.
+- [Rho Referral Program](https://www.rho.co/referral-program): Referral rewards for introducing companies to Rho.
+- [Gusto Partnership](https://www.rho.co/partner/gusto): Streamlined banking plus payroll for startups and SMBs.
+- [Doola Partnership](https://www.rho.co/partner/doola): Formation and banking for new companies.
+
+## Case studies
+- [All Customer Stories](https://www.rho.co/customers): How companies run their finances on Rho.
+- [Polimorphic](https://www.rho.co/customers/polimorphic): Saved 40+ hours per month by consolidating financial operations on Rho.
+- [Niural](https://www.rho.co/customers/niural): Scaled financial operations to support fast growth in HR tech.
+- [Superfiliate](https://www.rho.co/customers/superfiliate): Extended runway and tightened spend controls.
+- [Mud/Wtr](https://www.rho.co/customers/mud-wtr): Earned treasury yield on idle cash while staying liquid.
+- [Spark Advisors](https://www.rho.co/customers/spark-advisors): Cut AP processing from a week to minutes.
+- [Willet + Cumro Innovations](https://www.rho.co/customers/willet-cumro-innovations): Runs multi-entity finance across 10 entities on Rho.
+- [Dr. Squatch](https://www.rho.co/customers/dr-squatch): Streamlined workflows and improved financial visibility.
+- [Best Bay Logistics](https://www.rho.co/customers/best-bay-logistics): Upgraded logistics financial operations with automation.
+
+## Tools
+- [YC SAFE Note Generator](https://www.rho.co/tools/safe-note-generator): Create investor-ready SAFE agreements in minutes.
+- [Financial Tools for Founders](https://www.rho.co/tools): Calculators and templates for startup finance.
+- [Routing Numbers Directory](https://www.rho.co/routing-numbers): ACH and wire routing numbers for US banks.
+
+## Blogs and resources
+- [Rho Blog](https://www.rho.co/blog): Guides on startup finance, banking, and operations.
+- [Introducing the Rho API](https://www.rho.co/blog/introducing-rho-api): Launch post for the Rho API and MCP server — read-only access to balances and full transaction detail in Claude or anywhere you build (published 07/29/2026).
+- [How to Incorporate a Startup in 2026](https://www.rho.co/blog/how-to-incorporate-a-startup): Entity choice, Delaware costs after the August 2026 fee change, verified provider pricing (Stripe Atlas, Clerky, attorneys) — and how to incorporate free (conditions apply) with attorney-reviewed documents and bank the same day, pre-EIN (published 08/03/2026).
+- [Open a Business Bank Account Before Your EIN](https://www.rho.co/blog/open-business-bank-account-before-ein): Why most banks gate accounts on the EIN and how Rho's pre-EIN onboarding opens your account the same day you incorporate — directly or via the Stripe Atlas and Clerky integrations (published 08/03/2026).
+- [Burn Rate Explained](https://www.rho.co/blog/burn-rate): What burn rate means for startups and how to calculate it.
+- [Cash Runway Explained](https://www.rho.co/blog/cash-runway): How to calculate and extend startup runway.
+- [Understanding Treasury Bills](https://www.rho.co/blog/treasury-bills): How T-Bills work for business cash management.
+- [Startup Bookkeeping Essentials](https://www.rho.co/blog/startup-bookkeeping): Bookkeeping fundamentals for founders.
+- [Startup 409A Valuation Guide](https://www.rho.co/blog/409a-valuation): 409A compliance, methodology, and costs.
+- [Capitalization Table Guide](https://www.rho.co/blog/capitalization-tables): Cap tables explained for startups.
+- [Term Sheet Guide](https://www.rho.co/blog/term-sheet): Term sheets explained for founders.
+- [Valuation Cap Guide](https://www.rho.co/blog/valuation-cap): How valuation caps work in SAFEs.
+- [Expense Management Guide](https://www.rho.co/blog/expense-management): Strategies and tools for managing company spend.
+- [Cash Management Insights](https://www.rho.co/blog/cash-management): Cash management strategies for operating businesses.
+- [Working Capital for Startups](https://www.rho.co/blog/working-capital): Securing and managing working capital.
+- [BOI Reporting Guide](https://www.rho.co/blog/boi-reporting): Beneficial Ownership Information filing requirements.
+
+## Account Actions
+- [Open a Rho Account](https://signup.rho.co/): Apply online; startups can open an account at incorporation, including pre-EIN.
+- [Sign In](https://app.rho.co/login): Sign in to your Rho account.
+- [Contact Sales](https://www.rho.co/contact-sales): Talk to Rho's team or request a demo. Phone: 1 (855) 7-GETRHO.

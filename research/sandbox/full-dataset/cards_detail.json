@@ -1,0 +1,373 @@
+{
+ "20000000-0000-4000-8000-000000000001": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10005",
+    "second_line": "Floor 5",
+    "street": "100 Broadway",
+    "subdivision": "NY"
+   },
+   "blocked_categories": [
+    {
+     "code": "0742",
+     "name": "Veterinary services"
+    }
+   ],
+   "blocked_merchants": [
+    {
+     "name": "Petco"
+    }
+   ],
+   "cardholder": {
+    "first_name": "Ethan",
+    "last_name": "Parker",
+    "user_id": "10000000-0000-4000-8000-000000000001"
+   },
+   "current_spend": {
+    "amount": 6797,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000001",
+   "last_4": "0042",
+   "name": "Ethan Parker",
+   "pending_spend": {
+    "amount": 1500,
+    "currency": "USD"
+   },
+   "shipping_address": null,
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 500000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "active",
+   "type": "virtual",
+   "usage_ends_at": "2026-09-01T00:00:00Z",
+   "usage_starts_at": "2025-10-01T09:00:00Z"
+  }
+ },
+ "20000000-0000-4000-8000-000000000002": {
+  "status": 200,
+  "body": {
+   "allowed_categories": [
+    {
+     "code": "5812",
+     "name": "Eating places and restaurants"
+    }
+   ],
+   "allowed_merchants": [
+    {
+     "name": "Sweetgreen"
+    }
+   ],
+   "billing_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10011",
+    "street": "45 W 18th St",
+    "subdivision": "NY"
+   },
+   "cardholder": {
+    "first_name": "Maya",
+    "last_name": "Thompson",
+    "user_id": "10000000-0000-4000-8000-000000000002"
+   },
+   "current_spend": {
+    "amount": 45000,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000002",
+   "last_4": "1846",
+   "name": "Maya Thompson",
+   "pending_spend": {
+    "amount": 8000,
+    "currency": "USD"
+   },
+   "shipping_address": {
+    "city": "San Francisco",
+    "country_code": "US",
+    "postal_code": "94102",
+    "second_line": "Unit 12",
+    "street": "800 Market St",
+    "subdivision": "CA"
+   },
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 100000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "active",
+   "type": "physical",
+   "usage_ends_at": null,
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000003": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10005",
+    "street": "88 Pine St",
+    "subdivision": "NY"
+   },
+   "cardholder": {
+    "first_name": "Daniel",
+    "last_name": "Rivera",
+    "user_id": "10000000-0000-4000-8000-000000000003"
+   },
+   "current_spend": {
+    "amount": 1750,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000003",
+   "last_4": "7291",
+   "name": "Daniel Rivera",
+   "pending_spend": {
+    "amount": 250,
+    "currency": "USD"
+   },
+   "shipping_address": null,
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 250000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "active",
+   "type": "virtual",
+   "usage_ends_at": null,
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000004": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "Chicago",
+    "country_code": "US",
+    "postal_code": "60601",
+    "street": "200 State St",
+    "subdivision": "IL"
+   },
+   "cardholder": {
+    "first_name": "Lucas",
+    "last_name": "Bennett",
+    "user_id": "10000000-0000-4000-8000-000000000004"
+   },
+   "current_spend": {
+    "amount": 6331,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000004",
+   "last_4": "6603",
+   "name": "Lucas Bennett",
+   "pending_spend": {
+    "amount": 900,
+    "currency": "USD"
+   },
+   "shipping_address": {
+    "city": "Chicago",
+    "country_code": "US",
+    "postal_code": "60601",
+    "second_line": "Apt 4B",
+    "street": "200 State St",
+    "subdivision": "IL"
+   },
+   "spend_period_end": "2026-09-10T04:00:00Z",
+   "spend_period_start": "2026-09-09T04:00:00Z",
+   "spending_limit": {
+    "amount": 75000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "daily",
+   "status": "locked",
+   "type": "physical",
+   "usage_ends_at": null,
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000005": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "Austin",
+    "country_code": "US",
+    "postal_code": "78701",
+    "street": "1 Main St",
+    "subdivision": "TX"
+   },
+   "cardholder": {
+    "first_name": "Sofia",
+    "last_name": "Martin",
+    "user_id": "10000000-0000-4000-8000-000000000006"
+   },
+   "current_spend": {
+    "amount": 5331,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000005",
+   "last_4": "3150",
+   "name": "Sofia Martin Physical Card",
+   "pending_spend": {
+    "amount": 400,
+    "currency": "USD"
+   },
+   "shipping_address": {
+    "city": "Austin",
+    "country_code": "US",
+    "postal_code": "78701",
+    "second_line": "Suite 200",
+    "street": "1 Main St",
+    "subdivision": "TX"
+   },
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 200000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "active",
+   "type": "physical",
+   "usage_ends_at": null,
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000006": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "Boston",
+    "country_code": "US",
+    "postal_code": "02116",
+    "street": "500 Boylston St",
+    "subdivision": "MA"
+   },
+   "cardholder": {
+    "first_name": "Hannah",
+    "last_name": "Brooks",
+    "user_id": "10000000-0000-4000-8000-000000000007"
+   },
+   "current_spend": {
+    "amount": 1622132,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000006",
+   "last_4": "9027",
+   "name": "Hannah Brooks",
+   "pending_spend": {
+    "amount": 50000,
+    "currency": "USD"
+   },
+   "shipping_address": null,
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 2500000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "suspended",
+   "type": "virtual",
+   "usage_ends_at": null,
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000007": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10001",
+    "street": "10 Hudson Yards",
+    "subdivision": "NY"
+   },
+   "cardholder": {
+    "first_name": "Emma",
+    "last_name": "Walsh",
+    "user_id": "10000000-0000-4000-8000-000000000008"
+   },
+   "current_spend": {
+    "amount": 121827,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000007",
+   "last_4": "1184",
+   "name": "Emma Walsh Virtual Card",
+   "pending_spend": {
+    "amount": 0,
+    "currency": "USD"
+   },
+   "shipping_address": null,
+   "spend_period_end": "2026-10-01T04:00:00Z",
+   "spend_period_start": "2026-09-01T04:00:00Z",
+   "spending_limit": {
+    "amount": 150000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "monthly",
+   "status": "canceled",
+   "type": "virtual",
+   "usage_ends_at": "2026-06-30T23:59:59Z",
+   "usage_starts_at": null
+  }
+ },
+ "20000000-0000-4000-8000-000000000008": {
+  "status": 200,
+  "body": {
+   "billing_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10118",
+    "street": "350 Fifth Ave",
+    "subdivision": "NY"
+   },
+   "cardholder": {
+    "first_name": "Claire",
+    "last_name": "Mitchell",
+    "user_id": "10000000-0000-4000-8000-000000000009"
+   },
+   "current_spend": {
+    "amount": 0,
+    "currency": "USD"
+   },
+   "id": "20000000-0000-4000-8000-000000000008",
+   "last_4": "7732",
+   "name": "Claire Mitchell",
+   "pending_spend": {
+    "amount": 0,
+    "currency": "USD"
+   },
+   "shipping_address": {
+    "city": "New York",
+    "country_code": "US",
+    "postal_code": "10118",
+    "second_line": "Floor 20",
+    "street": "350 Fifth Ave",
+    "subdivision": "NY"
+   },
+   "spend_period_end": null,
+   "spend_period_start": "2025-03-01T12:00:00Z",
+   "spending_limit": {
+    "amount": 500000,
+    "currency": "USD"
+   },
+   "spending_limit_type": "fixed",
+   "status": "expired",
+   "type": "physical",
+   "usage_ends_at": "2026-06-30T23:59:59Z",
+   "usage_starts_at": null
+  }
+ }
+}

@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; letter-spacing: -0.011em; color: #151716; }
+    a { color: #08A68A; } a:hover { color: #04ECC1; }
+    @keyframes rdSweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(320%); } }
+    .step { display: flex; align-items: center; gap: 14px; padding: 13px 0; }
+    .alias { font-size: 13px; color: #B4BDB7; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; background: #FFFFFF; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="height: 64px; border-bottom: 1px solid #EFF3F2; display: flex; align-items: center; gap: 14px; padding: 0 28px; flex-shrink: 0;">
+    <svg width="42" height="19" viewBox="0 0 63 29" fill="none">
+      <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
+      <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
+      <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
+    </svg>
+    <div style="width: 1px; height: 20px; background: #04ECC1;"></div>
+    <span style="font-size: 19px; letter-spacing: -0.03em; color: #08A68A;">Desk</span>
+    <div style="flex-grow: 1;"></div>
+    <span style="font-size: 13px; color: #747D79;">Setting up for FusionTech</span>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center; min-height: 0;">
+    <div style="width: 1000px;">
+
+      <h1 style="margin: 0 0 8px; font-size: 33px; font-weight: 500; letter-spacing: -0.03em;">Reading your ledger</h1>
+      <p style="margin: 0 0 34px; font-size: 16px; color: #666E6A;">Rho Desk pulls every name that has touched your money, works out who each one actually is, then researches them.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+
+        <div>
+          <div class="step">
+            <div style="width: 26px; height: 26px; border-radius: 50%; background: #D9FFF3; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#08A68A" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </div>
+            <div style="flex-grow: 1;"><p style="margin: 0; font-size: 15px;">Read accounts, transactions, cards and invoices</p></div>
+            <span style="font-size: 13px; color: #747D79;">146 records</span>
+          </div>
+          <div class="step">
+            <div style="width: 26px; height: 26px; border-radius: 50%; background: #D9FFF3; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#08A68A" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </div>
+            <div style="flex-grow: 1;"><p style="margin: 0; font-size: 15px;">Group every counterparty name</p></div>
+            <span style="font-size: 13px; color: #747D79;">41 names</span>
+          </div>
+          <div class="step">
+            <div style="width: 26px; height: 26px; border-radius: 50%; background: #D9FFF3; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#08A68A" stroke-width="2.4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </div>
+            <div style="flex-grow: 1;"><p style="margin: 0; font-size: 15px;">Resolve each one to a real company</p></div>
+            <span style="font-size: 13px; color: #08A68A;">28 companies</span>
+          </div>
+          <div class="step">
+            <div style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid #6BFBD5; flex-shrink: 0;"></div>
+            <div style="flex-grow: 1;">
+              <p style="margin: 0 0 7px; font-size: 15px;">Research each company</p>
+              <div style="height: 4px; border-radius: 2px; background: #EFF3F2; overflow: hidden; position: relative;">
+                <div style="position: absolute; inset: 0; width: 62%; background: #6BFBD5; border-radius: 2px;"></div>
+              </div>
+            </div>
+            <span style="font-size: 13px; color: #747D79;">17 of 28</span>
+          </div>
+          <div class="step" style="opacity: 0.45;">
+            <div style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid #D7E0DE; flex-shrink: 0;"></div>
+            <div style="flex-grow: 1;"><p style="margin: 0; font-size: 15px;">Classify into Collect, Cut and Cover</p></div>
+          </div>
+        </div>
+
+        <div style="background: #F7F9F9; border-radius: 12px; padding: 24px 26px;">
+          <p style="margin: 0 0 4px; font-size: 12px; color: #747D79; letter-spacing: 0.05em; text-transform: uppercase;">Names becoming companies</p>
+          <p style="margin: 0 0 20px; font-size: 13px; color: #666E6A;">Your ledger writes the same vendor several ways. Desk merges them.</p>
+
+          <div style="background: #FFFFFF; border-radius: 10px; padding: 15px 17px; margin-bottom: 11px;">
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 11px;">
+              <span class="alias">AWS EMEA</span><span class="alias">AMZN AWS</span><span class="alias">AMAZON WEB SVCS</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 11px; border-top: 1px solid #EFF3F2;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#08A68A" stroke-width="2"><path d="M4 12h14M13 7l5 5-5 5"/></svg>
+              <span style="font-size: 15px;">Amazon Web Services</span>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border-radius: 10px; padding: 15px 17px; margin-bottom: 11px;">
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 11px;">
+              <span class="alias">SUMMIT ANALYTICS IO</span><span class="alias">Summit Inc</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 11px; border-top: 1px solid #EFF3F2;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#08A68A" stroke-width="2"><path d="M4 12h14M13 7l5 5-5 5"/></svg>
+              <span style="font-size: 15px;">Summit Analytics</span>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border-radius: 10px; padding: 15px 17px; position: relative; overflow: hidden;">
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-bottom: 11px;">
+              <span class="alias">DEEL INC</span><span class="alias">Deel Payroll</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-top: 11px; border-top: 1px solid #EFF3F2;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B4BDB7" stroke-width="2"><path d="M4 12h14M13 7l5 5-5 5"/></svg>
+              <span style="font-size: 15px; color: #B4BDB7;">resolving…</span>
+            </div>
+            <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: #D9FFF3; opacity: 0.5; animation: rdSweep 2.2s ease-in-out infinite;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px; margin-top: 34px;">
+        <button style="background: #6BFBD5; color: #151716; border: 0; border-radius: 8px; padding: 12px 24px; font-size: 15px; font-weight: 500; font-family: inherit;">Open the desk</button>
+        <span style="font-size: 14px; color: #747D79;">Around 40 seconds left. You can leave this running.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

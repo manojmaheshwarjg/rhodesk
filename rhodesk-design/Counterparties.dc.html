@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; letter-spacing: -0.011em; color: #151716; }
+    a { color: #08A68A; } a:hover { color: #04ECC1; }
+    .nv { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; color: #666E6A; font-size: 14px; }
+    .nv.on { background: #EFF3F2; color: #151716; }
+    .nv.ac { background: #D9FFF3; color: #08A68A; }
+    .sec { font-size: 11px; color: #B4BDB7; letter-spacing: .06em; text-transform: uppercase; padding: 18px 12px 6px; }
+    th { font-size: 12px; color: #747D79; font-weight: 400; text-align: left; padding: 11px 16px; border-bottom: 1px solid #EFF3F2; white-space: nowrap; }
+    td { padding: 15px 16px; border-bottom: 1px solid #EFF3F2; font-size: 14px; white-space: nowrap; vertical-align: middle; }
+    .bd { display: inline-block; padding: 4px 11px; border-radius: 6px; font-size: 12px; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; background: #FFFFFF; display: flex; overflow: hidden;">
+
+  <div style="width: 224px; border-right: 1px solid #EFF3F2; display: flex; flex-direction: column; padding: 0 12px; flex-shrink: 0;">
+    <div style="height: 64px; display: flex; align-items: center; padding: 0 12px;">
+      <svg width="48" height="22" viewBox="0 0 63 29" fill="none">
+        <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
+        <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
+        <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
+      </svg>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 12px;">
+      <div style="width: 26px; height: 26px; border-radius: 50%; background: #222524; color: #6BFBD5; font-size: 11px; display: flex; align-items: center; justify-content: center;">FT</div>
+      <span style="font-size: 14px;">FusionTech</span>
+    </div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9.5 12 4l9 5.5M5 10v9M19 10v9M3 20h18"/></svg>Banking</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/></svg>Cards</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h13v14H4z"/><path d="M17 9h3v10h-3"/><path d="M7 9h6M7 13h6"/></svg>Vendors</div>
+    <div class="sec">Desk</div>
+    <div class="nv ac"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h13a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M3 8h2M3 12h2M3 16h2"/><circle cx="13" cy="11" r="2"/><path d="M10 16c.6-1.6 1.7-2.4 3-2.4s2.4.8 3 2.4"/></svg>Counterparties</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3.5v3M12 17.5v3"/></svg>Signals</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 4h4l1.5 4.5-2.3 1.4a12 12 0 0 0 5.4 5.4l1.4-2.3L20 14.5v4a1.5 1.5 0 0 1-1.6 1.5A15.5 15.5 0 0 1 4 5.6 1.5 1.5 0 0 1 5.5 4z"/></svg>Calls</div>
+    <div class="sec">Workflows</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Invoicing</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13h5l2 3h4l2-3h5"/><path d="M4.5 13 6 5h12l1.5 8v6h-15z"/></svg>Bill Pay</div>
+    <div class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9h17M9 9v11.5"/></svg>Accounting</div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; min-width: 0;">
+    <div style="height: 64px; border-bottom: 1px solid #EFF3F2; display: flex; align-items: center; justify-content: flex-end; gap: 20px; padding: 0 28px; flex-shrink: 0;">
+      <span style="font-size: 13px; color: #666E6A;">Help Center</span>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 30px; height: 30px; border-radius: 50%; background: #D9FFF3; color: #08A68A; font-size: 12px; display: flex; align-items: center; justify-content: center;">MS</div>
+        <div style="display: flex; flex-direction: column;">
+          <span style="font-size: 13px; line-height: 1.3;">Mike Spara</span>
+          <span style="font-size: 11px; color: #747D79; line-height: 1.3;">Admin</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 26px 28px 0; display: flex; align-items: flex-start; justify-content: space-between;">
+      <div>
+        <h1 style="margin: 0; font-size: 27px; font-weight: 500; letter-spacing: -0.027em;">Counterparties</h1>
+        <p style="margin: 5px 0 0; font-size: 13px; color: #747D79;">41 ledger names · 28 resolved companies · last researched 8 minutes ago</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button style="background: #FFFFFF; color: #222524; border: 1px solid #D7E0DE; border-radius: 8px; padding: 9px 15px; font-size: 14px; font-family: inherit;">Export</button>
+        <button style="background: #6BFBD5; color: #151716; border: 0; border-radius: 8px; padding: 9px 17px; font-size: 14px; font-weight: 500; font-family: inherit;">Run desk</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 22px 28px;">
+      <div style="background: #F7F9F9; border-radius: 10px; padding: 15px 18px;">
+        <p style="margin: 0 0 7px; font-size: 13px; color: #666E6A;">Collect</p>
+        <p style="margin: 0; font-size: 25px; font-weight: 500; letter-spacing: -0.03em;">$127,400</p>
+        <p style="margin: 6px 0 0; font-size: 12px; color: #2E42A5;">9 overdue invoices</p>
+      </div>
+      <div style="background: #F7F9F9; border-radius: 10px; padding: 15px 18px;">
+        <p style="margin: 0 0 7px; font-size: 13px; color: #666E6A;">Cut</p>
+        <p style="margin: 0; font-size: 25px; font-weight: 500; letter-spacing: -0.03em;">$3,880<span style="font-size: 14px; color: #666E6A; font-weight: 400;"> /mo</span></p>
+        <p style="margin: 6px 0 0; font-size: 12px; color: #7A5A08;">6 opportunities</p>
+      </div>
+      <div style="background: #F7F9F9; border-radius: 10px; padding: 15px 18px;">
+        <p style="margin: 0 0 7px; font-size: 13px; color: #666E6A;">Cover</p>
+        <p style="margin: 0; font-size: 25px; font-weight: 500; letter-spacing: -0.03em;">$214,900</p>
+        <p style="margin: 6px 0 0; font-size: 12px; color: #A33A22;">3 counterparties at risk</p>
+      </div>
+      <div style="background: #F7F9F9; border-radius: 10px; padding: 15px 18px;">
+        <p style="margin: 0 0 7px; font-size: 13px; color: #666E6A;">Calls today</p>
+        <p style="margin: 0; font-size: 25px; font-weight: 500; letter-spacing: -0.03em;">7</p>
+        <p style="margin: 6px 0 0; font-size: 12px; color: #0C6B4F;">4 commitments secured</p>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 28px 18px;">
+      <span style="background: #151716; color: #FFFFFF; border-radius: 20px; padding: 6px 14px; font-size: 13px;">All 28</span>
+      <span style="background: #FFFFFF; color: #666E6A; border: 1px solid #D7E0DE; border-radius: 20px; padding: 6px 14px; font-size: 13px;">Collect 9</span>
+      <span style="background: #FFFFFF; color: #666E6A; border: 1px solid #D7E0DE; border-radius: 20px; padding: 6px 14px; font-size: 13px;">Cut 6</span>
+      <span style="background: #FFFFFF; color: #666E6A; border: 1px solid #D7E0DE; border-radius: 20px; padding: 6px 14px; font-size: 13px;">Cover 3</span>
+      <div style="flex-grow: 1;"></div>
+      <span style="font-size: 13px; color: #747D79;">Sorted by exposure</span>
+    </div>
+
+    <div style="flex-grow: 1; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+        <colgroup><col style="width:262px"><col style="width:112px"><col style="width:108px"><col style="width:108px"><col style="width:86px"><col style="width:96px"><col style="width:176px"><col style="width:104px"><col style="width:164px"></colgroup>
+        <thead><tr>
+          <th>Counterparty</th><th>Sector</th><th class="num">Money in</th><th class="num">Money out</th>
+          <th class="num">Oldest</th><th class="num">% of AR</th><th>Signal</th><th>Posture</th><th>Recommended</th>
+        </tr></thead>
+        <tbody>
+          <tr style="background: #FFFFFF;">
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">SA</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Summit Analytics</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7; overflow: hidden; text-overflow: ellipsis;">SUMMIT ANALYTICS IO · Summit Inc</p></div></div></td>
+            <td style="color: #747D79;">Data infra</td><td class="num">$47,200</td><td class="num" style="color: #747D79;">$0</td>
+            <td class="num" style="color: #A33A22;">94d</td><td class="num" style="color: #A33A22;">38%</td>
+            <td><span style="display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #666E6A;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #E24B4A;"></span>Down round</span></td>
+            <td><span class="bd" style="background: #FCE4DE; color: #A33A22;">Cover</span></td>
+            <td style="color: #747D79;">Escalate today</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">OM</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Orbit Media Group</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7;">ORBIT MEDIA GRP</p></div></div></td>
+            <td style="color: #747D79;">Advertising</td><td class="num">$31,850</td><td class="num" style="color: #747D79;">$0</td>
+            <td class="num">90d</td><td class="num">25%</td>
+            <td><span style="display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #666E6A;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #639922;"></span>Series B closed</span></td>
+            <td><span class="bd" style="background: #DFE5FB; color: #2E42A5;">Collect</span></td>
+            <td style="color: #747D79;">Call, friendly tone</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">AW</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Amazon Web Services</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7; overflow: hidden; text-overflow: ellipsis;">AWS EMEA · AMZN AWS · AMAZON WEB SVCS</p></div></div></td>
+            <td style="color: #747D79;">Cloud</td><td class="num" style="color: #747D79;">$0</td><td class="num">$14,206</td>
+            <td class="num" style="color: #B4BDB7;">&ndash;</td><td class="num" style="color: #B4BDB7;">&ndash;</td>
+            <td><span style="font-size: 13px; color: #B4BDB7;">No change</span></td>
+            <td><span class="bd" style="background: #EFF3F2; color: #666E6A;">Watch</span></td>
+            <td style="color: #B4BDB7;">None</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">AS</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Asana</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7;">ASANA.COM · Asana Inc</p></div></div></td>
+            <td style="color: #747D79;">Productivity</td><td class="num" style="color: #747D79;">$0</td><td class="num">$2,340</td>
+            <td class="num" style="color: #B4BDB7;">&ndash;</td><td class="num" style="color: #B4BDB7;">&ndash;</td>
+            <td><span style="display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #666E6A;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #EF9F27;"></span>Billed on two plans</span></td>
+            <td><span class="bd" style="background: #FDF2D5; color: #7A5A08;">Cut</span></td>
+            <td style="color: #747D79;">Cancel duplicate</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">AT</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Atlassian</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7;">ATLASSIAN PTY</p></div></div></td>
+            <td style="color: #747D79;">Productivity</td><td class="num" style="color: #747D79;">$0</td><td class="num">$1,880</td>
+            <td class="num" style="color: #B4BDB7;">&ndash;</td><td class="num" style="color: #B4BDB7;">&ndash;</td>
+            <td><span style="display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #666E6A;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #EF9F27;"></span>List price fell 22%</span></td>
+            <td><span class="bd" style="background: #FDF2D5; color: #7A5A08;">Cut</span></td>
+            <td style="color: #747D79;">Renegotiate</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">CC</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Cedar &amp; Co</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7;">CEDAR AND CO LLC</p></div></div></td>
+            <td style="color: #747D79;">Consulting</td><td class="num">$9,400</td><td class="num" style="color: #747D79;">$0</td>
+            <td class="num">41d</td><td class="num">7%</td>
+            <td><span style="font-size: 13px; color: #B4BDB7;">No contact found</span></td>
+            <td><span class="bd" style="background: #DFE5FB; color: #2E42A5;">Collect</span></td>
+            <td style="color: #747D79;">Email first</td>
+          </tr>
+          <tr>
+            <td><div style="display: flex; align-items: center; gap: 12px;"><div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2; color: #666E6A; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">DE</div><div style="min-width: 0;"><p style="margin: 0; font-size: 14px;">Deel</p><p style="margin: 2px 0 0; font-size: 12px; color: #B4BDB7;">DEEL INC · Deel Payroll</p></div></div></td>
+            <td style="color: #747D79;">Payroll</td><td class="num" style="color: #747D79;">$0</td><td class="num">$18,003</td>
+            <td class="num" style="color: #B4BDB7;">&ndash;</td><td class="num" style="color: #B4BDB7;">&ndash;</td>
+            <td><span style="font-size: 13px; color: #B4BDB7;">No change</span></td>
+            <td><span class="bd" style="background: #EFF3F2; color: #666E6A;">Watch</span></td>
+            <td style="color: #B4BDB7;">None</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

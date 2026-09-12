@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; letter-spacing: -0.011em; color: #151716; }
+    a { color: #08A68A; } a:hover { color: #04ECC1; }
+    .lbl { margin: 0 0 11px; font-size: 12px; color: #747D79; letter-spacing: 0.05em; text-transform: uppercase; }
+    .kv { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #EFF3F2; font-size: 14px; }
+    .t { display: flex; gap: 13px; margin-bottom: 17px; }
+    .av { width: 28px; height: 28px; border-radius: 7px; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 1024px; background: #F7F9F9; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="height: 64px; background: #FFFFFF; border-bottom: 1px solid #EFF3F2; display: flex; align-items: center; gap: 14px; padding: 0 28px; flex-shrink: 0;">
+    <svg width="42" height="19" viewBox="0 0 63 29" fill="none">
+      <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
+      <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
+      <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
+    </svg>
+    <div style="width: 1px; height: 20px; background: #04ECC1;"></div>
+    <span style="font-size: 19px; letter-spacing: -0.03em; color: #08A68A;">Desk</span>
+  </div>
+
+  <div style="flex-grow: 1; padding: 30px 0; display: flex; justify-content: center; min-height: 0;">
+    <div style="width: 1080px; display: flex; flex-direction: column;">
+
+      <div style="background: #D9FFF3; border-radius: 12px; padding: 22px 26px; display: flex; align-items: center; gap: 18px; margin-bottom: 22px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; background: #08A68A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </div>
+        <div style="flex-grow: 1;">
+          <p style="margin: 0; font-size: 19px; font-weight: 500; letter-spacing: -0.02em; color: #151716;">Commitment secured on a 94 day invoice</p>
+          <p style="margin: 5px 0 0; font-size: 14px; color: #0C6B4F;">Summit Analytics · 3 minutes 41 seconds · Dana Whitfield</p>
+        </div>
+        <span style="font-size: 13px; color: #08A68A;">Logged to Rho as a note</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; flex-grow: 1; min-height: 0;">
+
+        <div style="background: #FFFFFF; border: 1px solid #EFF3F2; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; min-height: 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+            <p class="lbl" style="margin: 0;">Transcript</p>
+            <span style="font-size: 13px; color: #08A68A;">Play recording</span>
+          </div>
+          <div style="flex-grow: 1; min-height: 0; overflow: hidden;">
+            <div class="t"><div class="av" style="background: #D9FFF3; color: #08A68A;">RD</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Rho Desk · 00:02</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">Hi Dana, this is an AI assistant calling on behalf of FusionTech about invoice INV-2026-0045. This call is recorded.</p></div></div>
+            <div class="t"><div class="av" style="background: #EFF3F2; color: #666E6A;">DW</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Dana · 00:21</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">Sure. Let me pull it up. Can you tell me what it was for?</p></div></div>
+            <div class="t"><div class="av" style="background: #D9FFF3; color: #08A68A;">RD</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Rho Desk · 00:29</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">Q2 platform licensing, issued June 12 on net 30 terms. Could we agree a date this week?</p></div></div>
+            <div class="t"><div class="av" style="background: #EFF3F2; color: #666E6A;">DW</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Dana · 01:14</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">I can do Thursday. I would need to split it though, half Thursday and half at the end of the month.</p></div></div>
+            <div class="t"><div class="av" style="background: #D9FFF3; color: #08A68A;">RD</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Rho Desk · 01:31</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">That works. So $23,600 on Thursday 17 September and $23,600 on Tuesday 30 September. I will send written confirmation today.</p></div></div>
+            <div class="t" style="margin-bottom: 0;"><div class="av" style="background: #EFF3F2; color: #666E6A;">DW</div><div><p style="margin: 0 0 3px; font-size: 12px; color: #747D79;">Dana · 02:02</p><p style="margin: 0; font-size: 14px; line-height: 1.55;">That is agreed. Send it to ap@summitanalytics.io as well.</p></div></div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 18px;">
+          <div style="background: #FFFFFF; border: 1px solid #EFF3F2; border-radius: 12px; padding: 22px 24px;">
+            <p class="lbl">What was agreed</p>
+            <div class="kv"><span style="color: #666E6A;">Instalment 1</span><span style="font-weight: 500;">$23,600</span></div>
+            <div class="kv"><span style="color: #666E6A;">Due</span><span>Thu 17 Sep</span></div>
+            <div class="kv"><span style="color: #666E6A;">Instalment 2</span><span style="font-weight: 500;">$23,600</span></div>
+            <div class="kv"><span style="color: #666E6A;">Due</span><span>Tue 30 Sep</span></div>
+            <div class="kv" style="border-bottom: 0;"><span style="color: #666E6A;">Second contact added</span><span style="font-size: 13px;">ap@summitanalytics.io</span></div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #EFF3F2; border-radius: 12px; padding: 22px 24px;">
+            <p class="lbl">What happens next</p>
+            <div style="display: flex; gap: 11px; padding: 9px 0; font-size: 14px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0C6B4F" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span style="line-height: 1.5;">Confirmation email drafted, waiting for you to send</span>
+            </div>
+            <div style="display: flex; gap: 11px; padding: 9px 0; font-size: 14px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#666E6A" stroke-width="1.8" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              <span style="line-height: 1.5;">Desk re-checks on Fri 18 Sep and calls again if nothing landed</span>
+            </div>
+            <div style="display: flex; gap: 11px; padding: 9px 0; font-size: 14px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#666E6A" stroke-width="1.8" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+              <span style="line-height: 1.5;">Stays on Cover until both instalments clear</span>
+            </div>
+          </div>
+
+          <div style="background: #FFFFFF; border: 1px solid #EFF3F2; border-radius: 12px; padding: 22px 24px; flex-grow: 1;">
+            <p class="lbl">Sentiment</p>
+            <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #666E6A;">Cooperative throughout. Dana volunteered the split rather than being pushed, which reads as a cash timing problem rather than a dispute.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 20px;">
+        <button style="background: #FFFFFF; color: #222524; border: 1px solid #D7E0DE; border-radius: 8px; padding: 11px 18px; font-size: 14px; font-family: inherit;">Edit the commitment</button>
+        <div style="flex-grow: 1;"></div>
+        <button style="background: #FFFFFF; color: #222524; border: 1px solid #D7E0DE; border-radius: 8px; padding: 11px 18px; font-size: 14px; font-family: inherit;">Next call in queue</button>
+        <button style="background: #6BFBD5; color: #151716; border: 0; border-radius: 8px; padding: 11px 22px; font-size: 14px; font-weight: 500; font-family: inherit;">Send confirmation</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; }
+    a { color: #08A68A; } a:hover { color: #04ECC1; }
+    @keyframes rdRise { 0%,4% { opacity: 0; transform: translateY(14px); } 12%,100% { opacity: 1; transform: translateY(0); } }
+    @keyframes rdRule { 0%,14% { transform: scaleX(0); } 26%,88% { transform: scaleX(1); } 100% { transform: scaleX(1); } }
+    @keyframes rdWord { 0%,24% { opacity: 0; transform: translateX(-10px); } 36%,100% { opacity: 1; transform: translateX(0); } }
+    @keyframes rdRing { 0%,38% { opacity: 0; transform: scale(0.4); } 44% { opacity: 1; transform: scale(1); } 62% { opacity: 0; transform: scale(2.4); } 100% { opacity: 0; transform: scale(2.4); } }
+    @keyframes rdDot { 0%,38% { opacity: 0; } 44%,100% { opacity: 1; } }
+    @keyframes rdSub { 0%,46% { opacity: 0; } 58%,100% { opacity: 1; } }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #151716; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 96px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 28px;">
+    <div style="display: flex; align-items: center; gap: 26px;">
+      <svg width="132" height="61" viewBox="0 0 63 29" fill="none" style="animation: rdRise 6s ease-out infinite;">
+        <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#F7F9F9"/>
+        <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#F7F9F9"/>
+        <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#F7F9F9"/>
+      </svg>
+      <div style="width: 1px; height: 52px; background: #6BFBD5; transform-origin: center top; animation: rdRule 6s ease-out infinite;"></div>
+      <div style="display: flex; align-items: center; gap: 20px; animation: rdWord 6s ease-out infinite;">
+        <span style="font-size: 56px; font-weight: 400; letter-spacing: -0.035em; color: #6BFBD5; line-height: 1;">Desk</span>
+        <div style="position: relative; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #6BFBD5; animation: rdRing 6s ease-out infinite;"></div>
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #6BFBD5; animation: rdDot 6s ease-out infinite;"></div>
+        </div>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: 17px; color: #747D79; letter-spacing: -0.01em; animation: rdSub 6s ease-out infinite;">Every name on your ledger is a relationship. This one works them.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; width: 1088px;">
+
+    <div style="background: #222524; border-radius: 12px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 150px;">
+      <span style="font-size: 12px; color: #747D79; letter-spacing: 0.06em; text-transform: uppercase;">Primary lockup</span>
+      <div style="display: flex; align-items: center; gap: 13px; flex-grow: 1;">
+        <svg width="62" height="29" viewBox="0 0 63 29" fill="none">
+          <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#F7F9F9"/>
+          <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#F7F9F9"/>
+          <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#F7F9F9"/>
+        </svg>
+        <div style="width: 1px; height: 26px; background: #6BFBD5;"></div>
+        <span style="font-size: 27px; font-weight: 400; letter-spacing: -0.035em; color: #6BFBD5; line-height: 1;">Desk</span>
+      </div>
+    </div>
+
+    <div style="background: #F7F9F9; border-radius: 12px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 150px;">
+      <span style="font-size: 12px; color: #747D79; letter-spacing: 0.06em; text-transform: uppercase;">On light</span>
+      <div style="display: flex; align-items: center; gap: 13px; flex-grow: 1;">
+        <svg width="62" height="29" viewBox="0 0 63 29" fill="none">
+          <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
+          <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
+          <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
+        </svg>
+        <div style="width: 1px; height: 26px; background: #04ECC1;"></div>
+        <span style="font-size: 27px; font-weight: 400; letter-spacing: -0.035em; color: #08A68A; line-height: 1;">Desk</span>
+      </div>
+    </div>
+
+    <div style="background: #222524; border-radius: 12px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 150px;">
+      <span style="font-size: 12px; color: #747D79; letter-spacing: 0.06em; text-transform: uppercase;">App mark</span>
+      <div style="display: flex; align-items: center; gap: 14px; flex-grow: 1;">
+        <div style="width: 52px; height: 52px; border-radius: 13px; background: #6BFBD5; display: flex; align-items: center; justify-content: center;">
+          <svg width="27" height="13" viewBox="0 0 63 29" fill="none">
+            <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
+            <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
+            <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
+          </svg>
+        </div>
+        <span style="font-size: 13px; color: #747D79; line-height: 1.5;">Favicon,<br>call notification</span>
+      </div>
+    </div>
+
+    <div style="background: #222524; border-radius: 12px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; min-height: 150px;">
+      <span style="font-size: 12px; color: #747D79; letter-spacing: 0.06em; text-transform: uppercase;">Palette</span>
+      <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1;">
+        <div style="display: flex; gap: 8px;">
+          <div style="width: 34px; height: 34px; border-radius: 8px; background: #6BFBD5;"></div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; background: #D9FFF3;"></div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; background: #08A68A;"></div>
+          <div style="width: 34px; height: 34px; border-radius: 8px; background: #EFF3F2;"></div>
+        </div>
+        <span style="font-size: 12px; color: #747D79;">caribbean 200 · 100 · 400 · moon 200</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

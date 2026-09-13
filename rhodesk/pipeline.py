@@ -48,6 +48,18 @@ ACRONYMS = {
 }
 
 
+# The name resolver sometimes annotates a sector it suspects is made up, as in
+# "Retail (Sample Data)". That is the model hedging, not a sector, and it reads
+# as fake on every screen that shows it.
+_SECTOR_HEDGE = re.compile(
+    r"\s*\((?=[^)]*\b(?:sample|example|fictional|fictitious|placeholder|test|demo|dummy|mock)\b)[^)]*\)",
+    re.IGNORECASE)
+
+
+def clean_sector(sector: str | None) -> str:
+    return _SECTOR_HEDGE.sub("", sector or "").strip()
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -372,7 +384,7 @@ def _merge(keys: list[str], buckets: dict[str, dict], meta: dict) -> dict:
         "display_name": name,
         "aliases": sorted(aliases),
         "domain": meta.get("domain") or "",
-        "sector": meta.get("sector") or "",
+        "sector": clean_sector(meta.get("sector")),
         "resolution_note": meta.get("note") or "",
         "money_in": agg["money_in"], "money_out": agg["money_out"],
         "txn_count": agg["txn_count"], "open_invoices": agg["open_invoices"],

@@ -383,20 +383,23 @@ async function openTimeline(cpId) {
   openModal(false);
   $("cmodal").innerHTML = `
     <div class="chd"><div><h2 class="ctitle">Timeline</h2>
-      <p class="creason">Reading the call history\u2026</p></div></div>
+      <p class="creason">Reading the call history…</p></div></div>
     <div class="cbody"><p class="empty">One moment.</p></div>`;
 
   let d;
   try { d = await api(`/api/counterparties/${cpId}/calls`); }
   catch (e) { toast("Could not load the timeline: " + e.message); closeCallModal(); return; }
+  paintTimeline(cpId, d);
+}
 
+function paintTimeline(cpId, d) {
   const calls = d.calls || [];
   $("cmodal").innerHTML = `
     <div class="chd">
       <div>
         <h2 class="ctitle">${esc(d.display_name)}</h2>
         <p class="creason">${calls.length
-          ? `${calls.length} call${calls.length === 1 ? "" : "s"} \u00b7 the last one ${esc(AGO(calls[0].at))}`
+          ? `${calls.length} call${calls.length === 1 ? "" : "s"} · the last one ${esc(AGO(calls[0].at))}`
           : "No calls yet"}</p>
       </div>
       <button class="btn2" id="cmCancel" style="flex-shrink:0">Close</button>
@@ -405,17 +408,67 @@ async function openTimeline(cpId) {
       ${calls.length
         ? `<ol class="tlist">${calls.map(timelineItem).join("")}</ol>`
         : '<p class="empty">Rhonica has not called them yet.</p>'}
-      <p class="tlnote">Rhonica reads this history before every call, so a follow-up picks up where the last one left off.</p>
+      <div class="tlnote">
+        <p id="tlSays">Rhonica reads this history before every call, so a follow-up picks up where the last one left off.</p>
+        <span class="tlacts" id="tlActs"></span>
+      </div>
     </div>`;
   $("cmCancel").onclick = closeCallModal;
+  if (calls.length) clearTimelineLink(cpId, d, calls);
+}
+
+// Clear timeline, a dev link for demos. It deletes this counterparty's calls,
+// so Rhonica's next call opens as a first one, and asks once, inline, first,
+// because it cannot be undone.
+function clearTimelineLink(cpId, d, calls) {
+  const says = $("tlSays"), acts = $("tlActs"), usual = says.textContent;
+  const idle = () => {
+    says.textContent = usual;
+    acts.innerHTML = '<button class="tlink" id="tlClear">Clear timeline</button>';
+    $("tlClear").onclick = ask;
+  };
+  const ask = () => {
+    if (calls.some((c) => c.state === "live" || c.state === "wrapping")) {
+      toast("Rhonica is still on a call with them. Clear the timeline once it ends.");
+      return;
+    }
+    const n = calls.length;
+    says.textContent = `Clear ${n === 1 ? "this call" : `all ${n} calls`}? Rhonica's next call will start fresh, and this can't be undone.`;
+    acts.innerHTML = '<button class="tlink muted" id="tlKeep">Cancel</button><button class="tlink bad" id="tlGo">Clear</button>';
+    $("tlKeep").onclick = idle;
+    $("tlGo").onclick = clear;
+  };
+  const clear = async () => {
+    $("tlGo").disabled = true;
+    try {
+      await api(`/api/counterparties/${cpId}/calls`, { method: "DELETE" });
+    } catch (e) {
+      let why = e.message;
+      try { why = JSON.parse(e.message).detail || why; } catch (_) { /* not JSON */ }
+      toast("Could not clear the timeline: " + why);
+      idle();
+      return;
+    }
+    toast(`Timeline cleared. Rhonica's next call to ${d.display_name} starts fresh.`);
+    paintTimeline(cpId, { ...d, calls: [] });
+  };
+  idle();
+}
+
+// The result a call ended with, and the tone its dot and label take. Shared by
+// the Timeline and the drawers, so a call reads the same everywhere.
+function callLabel(c) {
+  const res = RESULT[c.result];
+  return {
+    label: c.state === "wrapping" ? "Writing the summary\u2026"
+      : c.state !== "done" ? "On a call now"
+      : res ? res.label : (c.result ? humanKey(c.result) : "Completed"),
+    tone: c.state !== "done" ? "live" : (res && res.tone) || "plain",
+  };
 }
 
 function timelineItem(c) {
-  const res = RESULT[c.result];
-  const label = c.state === "wrapping" ? "Writing the summary\u2026"
-    : c.state !== "done" ? "On a call now"
-    : res ? res.label : (c.result ? humanKey(c.result) : "Completed");
-  const tone = c.state !== "done" ? "live" : (res && res.tone) || "plain";
+  const { label, tone } = callLabel(c);
   const when = new Date(c.at).toLocaleString(undefined,
     { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
   const took = c.state === "done" && c.duration_secs != null ? ` \u00b7 ${MMSS(c.duration_secs)}` : "";
@@ -1212,37 +1265,60 @@ function closeDrawer() {
   if (state.callTimer) { clearInterval(state.callTimer); state.callTimer = null; }
 }
 
+// --- drawers ----------------------------------------------------------------
+// Every drawer shares one header: who it is about, a line of context, and the
+// actions on the right. Below it, sections read top to bottom.
+
+const initialsOf = (name) => (name || "").split(/\s+/).filter(Boolean).slice(0, 2)
+  .map((w) => w[0]).join("").toUpperCase();
+
+// The generated ledger gives customers reserved example addresses. Showing one
+// would read as fake, so a counterparty without a real address shows none.
+const usableEmail = (email) =>
+  (email && !/\.(example|test|invalid|localhost)$/i.test(email) ? email : "");
+
+function drawerHead({ name, sub = "", why = "", actions = "" }) {
+  return `<div class="drhd">
+    <div class="drid">
+      <span class="dravatar">${esc(initialsOf(name))}</span>
+      <div style="min-width:0">
+        <h2 class="drtitle">${esc(name)}</h2>
+        ${sub ? `<p class="drsub">${esc(sub)}</p>` : ""}
+      </div>
+    </div>
+    <div class="dracts"><button class="btn2" id="closeDrawer">Close</button>${actions}</div>
+    ${why ? `<p class="drwhy">${why}</p>` : ""}
+  </div>`;
+}
+
+function showDrawer(html) {
+  $("drawer").innerHTML = html;
+  $("drawer").classList.add("on");
+  $("scrim").classList.add("on");
+  const close = $("closeDrawer");
+  if (close) close.onclick = closeDrawer;
+}
+
 async function openCall(id) {
   const rows = await api("/api/calls");
   const c = rows.find((x) => x.id === id);
   if (!c) return;
   const oc = c.outcome || {};
-  const r = RESULT[oc.result] || {
-      label: c.state === "live" ? "On the call now"
-           : c.state === "wrapping" ? "Writing the summary\u2026" : "Completed", tone: "" };
-  const commitments = (oc.commitments || []).filter((x) => x && x.label);
+  const { label, tone } = callLabel({ state: c.state, result: oc.result });
+  const agreed = (oc.commitments || []).filter((x) => x && x.label);
+  const when = new Date(c.created_at).toLocaleString(undefined,
+    { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
 
-  $("drawer").classList.add("on");
-  $("scrim").classList.add("on");
-  $("drawer").innerHTML = `
-    <div class="dhd">
-      <div>
-        <h2 style="margin:0;font-size:22px;font-weight:500;letter-spacing:-.027em">${esc(c.counterparty_name)}</h2>
-        <p class="sub">${esc(new Date(c.created_at).toLocaleString(undefined,
-          { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }))}
-          · ${esc(c.to_number || "no number")}</p>
-      </div>
-      <button class="btn2" id="closeDrawer">Close</button>
-    </div>
-    <div class="dbody one">
-      <div>
+  showDrawer(drawerHead({ name: c.counterparty_name, sub: `${when} · ${c.to_number || "no number"}` }) + `
+    <div class="drbody">
+      <section class="drsec">
         <p class="lbl">Result</p>
-        <div class="card" style="margin-bottom:22px">
-          <p class="res ${esc(r.tone)}" style="margin:0 0 9px;font-size:17px">${esc(r.label)}</p>
-          <p style="margin:0;font-size:14px;line-height:1.6">${esc(oc.summary || "Nothing recorded.")}</p>
-          ${commitments.length ? `<div style="margin-top:15px">${commitments.map((x) =>
-            `<div class="kv"><span>${esc(humanKey(x.label))}</span><span>${esc(String(x.value))}</span></div>`).join("")}</div>` : ""}
-        </div>
+        <p class="drres ${esc(tone)}">${esc(label)}</p>
+        <p class="drnote">${esc(oc.summary || "Nothing recorded.")}</p>
+        ${agreed.length ? `<div style="margin-top:10px">${agreed.map((x) =>
+          `<div class="kv"><span>${esc(humanKey(x.label))}</span><span>${esc(String(x.value))}</span></div>`).join("")}</div>` : ""}
+      </section>
+      <section class="drsec">
         <p class="lbl">Transcript</p>
         <div class="tx">${(c.transcript || []).map((t) => t.role === "tool"
           ? `<div class="tool">${esc(t.text)}</div>`
@@ -1250,136 +1326,106 @@ async function openCall(id) {
              <div><p class="who">${t.role === "agent" ? "Rhonica" : esc(c.counterparty_name)}</p>
              <p class="say">${esc(t.text)}</p></div></div>`).join("")
           || '<p style="color:var(--gr2);margin:0">Nothing was recorded for this call.</p>'}</div>
-      </div>
-    </div>`;
-  $("closeDrawer").onclick = closeDrawer;
+      </section>
+    </div>`);
 }
 
 async function openDraft(id) {
-  $("drawer").classList.add("on");
-  $("scrim").classList.add("on");
-  $("drawer").innerHTML = `<div class="dhd"><h2 style="margin:0;font-size:22px;font-weight:500">Drafting</h2></div>
-    <div class="dbody one"><p class="empty">Writing the email…</p></div>`;
+  showDrawer(`<div class="drhd"><div class="drid"><div>
+    <h2 class="drtitle">Drafting</h2><p class="drsub">Writing the email…</p></div></div></div>`);
   const d = await api(`/api/counterparties/${id}/draft`, { method: "POST" });
-  $("drawer").innerHTML = `
-    <div class="dhd">
-      <div><h2 style="margin:0;font-size:22px;font-weight:500;letter-spacing:-.027em">${esc(d.vendor)}</h2>
-        <p class="sub">Renegotiation email, drafted from this run's research</p></div>
-      <button class="btn2" id="closeDrawer">Close</button>
-    </div>
-    <div class="dbody one">
-      <div class="card">
-        <p class="lbl">To</p>
-        <p style="margin:0 0 16px;font-size:14px">${esc(d.to || "no address on file")}</p>
-        <p class="lbl">Subject</p>
-        <p style="margin:0 0 16px;font-size:15px;font-weight:500">${esc(d.subject)}</p>
-        <p class="lbl">Body</p>
-        <p style="margin:0;font-size:14px;line-height:1.65;white-space:pre-wrap">${esc(d.body)}</p>
-      </div>
-      <p class="hint">Drafted, not sent. Copy it into your mail client when you are happy with it.</p>
-    </div>`;
-  $("closeDrawer").onclick = closeDrawer;
+  showDrawer(drawerHead({ name: d.vendor, sub: "Renegotiation email, drafted from this run's research" }) + `
+    <div class="drbody">
+      <section class="drsec"><p class="lbl">To</p>
+        <p class="drnote">${esc(usableEmail(d.to) || "No address on file")}</p></section>
+      <section class="drsec"><p class="lbl">Subject</p>
+        <p class="drnote" style="font-weight:500">${esc(d.subject)}</p></section>
+      <section class="drsec"><p class="lbl">Body</p>
+        <p class="drnote" style="white-space:pre-wrap">${esc(d.body)}</p></section>
+      <p class="drempty">Drafted, not sent. Copy it into your mail client when you're happy with it.</p>
+    </div>`);
 }
 
+// A counterparty, read top to bottom: who they are and what to do, what
+// Rhonica found, the money, recent calls, then the details.
 async function openDossier(id) {
-  const cp = await api(`/api/counterparties/${id}`);
-  const initials = cp.display_name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  const open = (cp.invoices || []).filter((i) => i.open);
+  const [cp, past] = await Promise.all([
+    api(`/api/counterparties/${id}`),
+    api(`/api/counterparties/${id}/calls`).catch(() => ({ calls: [] })),
+  ]);
+  const verdict = cp.verdict || "none";
+  const draft = verdict === "email";
+  // The same actions the board offers on this row, so the two never disagree.
+  const action = draft ? `<button class="btn" id="drAct">Draft email</button>`
+    : cp.callable ? `<button class="btn" id="drAct">Call</button>` : "";
+  const why = `<span class="verdict v-${esc(verdict)}">${esc(VERDICT_LABEL[verdict] || verdict)}</span>`
+    + (cp.verdict_reason ? `<span>${esc(cp.verdict_reason)}</span>` : "");
 
-  $("drawer").innerHTML = `
-    <div class="dhd">
-      <div style="display:flex;gap:15px">
-        <div class="sq" style="width:46px;height:46px;border-radius:11px;background:var(--mint-l);color:var(--mint-t);font-size:15px">${esc(initials)}</div>
-        <div>
-          <div style="display:flex;align-items:center;gap:11px">
-            <h2 style="margin:0;font-size:22px;font-weight:500;letter-spacing:-.027em">${esc(cp.display_name)}</h2>
-            <span class="bd ${esc(cp.posture)}">${cp.posture[0].toUpperCase() + cp.posture.slice(1)}</span>
-          </div>
-          <p class="sub">${esc([cp.domain, cp.sector].filter(Boolean).join(" · ") || "no public profile resolved")}</p>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn2" id="closeDrawer">Close</button>
-        ${cp.posture !== "watch" ? `<button class="btn" id="briefBtn">Review call</button>` : ""}
-      </div>
-    </div>
-    <div class="dbody">
-      <div>
-        <p class="lbl">Signals</p>
-        ${(cp.signals || []).length ? cp.signals.map((s) => `
-          <div class="sgrow">
-            <span class="sd ${esc(s.severity)}" style="margin-top:7px"></span>
-            <div><p style="margin:0 0 3px;font-size:15px">${esc(s.title)}</p>
-            <p style="margin:0;font-size:14px;color:var(--gr);line-height:1.5">${esc(s.detail)}</p>
-            ${s.source_url ? `<p class="src">${esc(s.source_url)}</p>` : ""}</div>
-          </div>`).join("")
-          : `<p style="color:var(--gr2);font-size:14px">Nothing surfaced. ${state.status?.services.tavily.live ? "" : "Tavily is stubbed, so this is expected."}</p>`}
-        <p class="lbl" style="margin-top:22px">Ledger names merged</p>
-        <p style="margin:0;font-size:14px;color:var(--gr);line-height:1.6">${esc((cp.aliases || []).join(" · "))}</p>
-        ${cp.resolution_note ? `<p style="margin:8px 0 0;font-size:13px;color:var(--gr2)">${esc(cp.resolution_note)}</p>` : ""}
-      </div>
-      <div>
-        <p class="lbl">Exposure</p>
-        <div class="kv"><span>Open invoices</span><span>${cp.open_invoices}</span></div>
-        <div class="kv"><span>Outstanding</span><span style="font-weight:500">${money(cp.outstanding)}</span></div>
-        <div class="kv"><span>Oldest</span><span${cp.oldest_days > 60 ? ' style="color:var(--red-t)"' : ""}>${cp.oldest_days ? cp.oldest_days + " days" : "-"}</span></div>
-        <div class="kv"><span>Share of all AR</span><span>${Math.round((cp.ar_share || 0) * 100)}%</span></div>
-        <div class="kv"><span>Money in</span><span>${money(cp.money_in)}</span></div>
-        <div class="kv"><span>Money out</span><span>${money(cp.money_out)}</span></div>
-        ${cp.recurring ? `<div class="kv"><span>Looks recurring</span><span>${money(cp.monthly_spend)} /mo</span></div>` : ""}
-        ${open.length ? `<p class="lbl" style="margin-top:22px">Open invoices</p>${open.map((i) => `
-          <div class="card" style="padding:13px 15px;margin-bottom:9px">
-            <div style="display:flex;justify-content:space-between"><span>${esc(i.number)}</span><span style="font-weight:500">${money(i.total)}</span></div>
-            <p style="margin:5px 0 0;font-size:12px;color:${i.days_overdue > 0 ? "var(--red-t)" : "var(--gr2)"}">${i.days_overdue > 0 ? i.days_overdue + " days overdue" : "due " + esc(i.due_date)}</p>
-          </div>`).join("")}` : ""}
-        ${cp.contact_email ? `<p class="lbl" style="margin-top:22px">Contact</p><p style="margin:0;font-size:14px">${esc(cp.contact_email)}</p>` : ""}
-      </div>
-    </div>`;
+  showDrawer(drawerHead({
+      name: cp.display_name,
+      sub: [cp.domain, cp.sector].filter(Boolean).join(" · "),
+      why, actions: action,
+    })
+    + `<div class="drbody">${foundSection(cp)}${moneySection(cp)}${callsSection(past.calls || [])}${detailsSection(cp)}</div>`);
 
-  $("drawer").classList.add("on");
-  $("scrim").classList.add("on");
-  $("closeDrawer").onclick = closeDrawer;
-  const bb = $("briefBtn");
-  if (bb) bb.onclick = () => openBrief(cp);
+  const act = $("drAct");
+  if (act) act.onclick = () => { closeDrawer(); if (draft) openDraft(cp.id); else reviewCall(cp); };
+  const timeline = $("drTimeline");
+  if (timeline) timeline.onclick = () => { closeDrawer(); openTimeline(cp.id); };
 }
 
-async function openBrief(cp) {
-  $("drawer").innerHTML = `<div class="dhd"><div>
-      <h2 style="margin:0;font-size:22px;font-weight:500;letter-spacing:-.027em">Call briefing</h2>
-      <p class="sub">${esc(cp.display_name)}</p></div>
-      <button class="btn2" id="closeDrawer">Close</button></div>
-    <div style="padding:40px;text-align:center;color:var(--gr2)">Writing the brief…</div>`;
-  $("closeDrawer").onclick = closeDrawer;
+// The board's own finding, so the drawer never contradicts the row it came from.
+function foundSection(cp) {
+  return `<section class="drsec"><p class="lbl">What Rhonica found</p>
+    <p class="drnote">${esc(cp.note || "Nothing notable surfaced about them.")}</p>${citeHtml(cp)}</section>`;
+}
 
-  const brief = await api(`/api/counterparties/${cp.id}/brief`, { method: "POST" });
-  const list = (arr, colour) => (arr || []).map((x) =>
-    `<div class="rule"><span class="sd ${colour}" style="margin-top:7px"></span><span>${esc(x)}</span></div>`).join("");
+// A customer shows what they owe; a vendor shows what we pay them.
+function moneySection(cp) {
+  if ((cp.outstanding || 0) > 0) {
+    const open = (cp.invoices || []).filter((i) => i.open)
+      .sort((a, b) => (b.days_overdue || 0) - (a.days_overdue || 0));
+    const due = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    return `<section class="drsec">
+      <div class="drsplit"><p class="lbl">Owed</p><p class="drbig">${money(cp.outstanding)}</p></div>
+      <p class="drmeta">${open.length} open invoice${open.length === 1 ? "" : "s"} · ${Math.round((cp.ar_share || 0) * 100)}% of your AR</p>
+      ${open.map((i) => `<div class="drrow"><span class="ref">${esc(i.number)}</span>
+        <span class="amt">${money(i.total)}</span>
+        <span class="late${i.days_overdue > 0 ? " bad" : ""}">${i.days_overdue > 0
+          ? `${i.days_overdue} days overdue` : `due ${esc(due(i.due_date))}`}</span></div>`).join("")}
+    </section>`;
+  }
+  if ((cp.monthly_spend || 0) > 0) {
+    return `<section class="drsec">
+      <div class="drsplit"><p class="lbl">Spend</p><p class="drbig">${money(cp.monthly_spend)}<small> a month</small></p></div>
+      <p class="drmeta">${cp.duplicate ? '<span class="bd cut">duplicate</span> ' : ""}${money(cp.money_out)} paid so far${cp.txn_count ? `, across ${cp.txn_count} payments` : ""}</p>
+    </section>`;
+  }
+  return "";
+}
 
-  $("drawer").innerHTML = `
-    <div class="dhd">
-      <div><h2 style="margin:0;font-size:22px;font-weight:500;letter-spacing:-.027em">Call briefing</h2>
-      <p class="sub">${esc(cp.display_name)} · ${money(cp.outstanding)} outstanding</p></div>
-      <button class="btn2" id="closeDrawer">Close</button>
-    </div>
-    <div style="padding:22px 30px">
-      ${brief.needs_approval ? `<div class="warnbox"><strong style="font-weight:500">Above your approval threshold.</strong> A human has to approve this one before it dials.</div>` : ""}
-      <div class="card"><p class="lbl">Opening line</p>
-        <p style="margin:0;font-size:15px;line-height:1.6">${esc(brief.opening_line)}</p></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="card"><p class="lbl">Authorised to agree</p>${list(brief.may_agree, "positive")}</div>
-        <div class="card"><p class="lbl">Must not</p>${list(brief.must_not, "severe")}</div>
-      </div>
-      <div class="card"><p class="lbl">Context the agent may rely on</p>${list(brief.context, "info")}</div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
-        <span style="font-size:13px;color:var(--gr2)">${state.status?.services.voice.live ? "Dials through ElevenLabs" : "Voice is not configured yet"}</span>
-        <div style="flex-grow:1"></div>
-        <button class="btn2" id="dialBtn">${brief.needs_approval ? "Approve and simulate" : "Simulate call"}</button>
-        <button class="btn" id="talkBtn">Talk to the agent</button>
-      </div>
-    </div>`;
-  $("closeDrawer").onclick = closeDrawer;
-  $("dialBtn").onclick = () => startCall(cp, brief);
-  $("talkBtn").onclick = () => startVoice(cp, brief);
+function callsSection(calls) {
+  const line = (c) => {
+    const { label, tone } = callLabel(c);
+    const when = new Date(c.at).toLocaleString(undefined,
+      { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    return `<div class="drcall"><span class="drdot ${esc(tone)}"></span><span class="when">${esc(when)}</span><span>${esc(label)}</span></div>`;
+  };
+  return `<section class="drsec">
+    <div class="drsplit"><p class="lbl">Recent calls</p>${calls.length ? '<button class="tlink" id="drTimeline">Full timeline</button>' : ""}</div>
+    ${calls.length ? calls.slice(0, 3).map(line).join("") : '<p class="drempty">Rhonica has not called them yet.</p>'}
+  </section>`;
+}
+
+function detailsSection(cp) {
+  const aliases = (cp.aliases || []).filter((a) => a && a.toLowerCase() !== cp.display_name.toLowerCase());
+  const rows = [
+    ["Contact", usableEmail(cp.contact_email)],
+    ["Phone", cp.contact_phone || ""],
+    ["On the ledger as", aliases.join(", ")],
+  ].filter(([, value]) => value);
+  return rows.length ? `<section class="drsec"><p class="lbl">Details</p>${rows.map(([k, v]) =>
+    `<div class="kv"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</section>` : "";
 }
 
 // --- browser voice ---------------------------------------------------------

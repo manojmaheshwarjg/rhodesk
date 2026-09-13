@@ -59,14 +59,14 @@ def test_how_long_ago_reads_like_a_person_on_the_phone():
 
 def test_a_first_call_opens_with_the_full_introduction():
     assert call_history.opener("Sam", "FusionTech", None, None, NOW) == (
-        "Hey Sam, it's Rhonica. I'm an AI assistant calling from FusionTech, "
+        "Hey Sam, it's Rhonica from the accounts team at FusionTech, "
         "and I should mention this call is being recorded. Is now a good time for a quick chat?")
 
 
 def test_a_follow_up_hours_later_acknowledges_the_last_call():
     spoke = {"at": (NOW - timedelta(hours=2)).isoformat()}
     assert call_history.opener("Sam", "FusionTech", spoke, spoke, NOW) == (
-        "Hey Sam, it's Rhonica again, the AI assistant from FusionTech. "
+        "Hey Sam, it's Rhonica again from the FusionTech accounts team. "
         "We spoke about two hours ago, and I should mention this call is being recorded too. "
         "Is now still a good time for a quick chat?")
 
@@ -82,7 +82,7 @@ def test_after_an_unanswered_call_she_does_not_claim_they_spoke():
     """Nobody picked up, so they have never heard her introduce herself."""
     tried = {"at": (NOW - timedelta(days=3)).isoformat()}
     line = call_history.opener("Sam", "FusionTech", None, tried, NOW)
-    assert line.startswith("Hey Sam, it's Rhonica. I'm an AI assistant calling from FusionTech. "
+    assert line.startswith("Hey Sam, it's Rhonica from the accounts team at FusionTech. "
                            "I tried you on Thursday, and I should mention this call is being recorded.")
     assert "We spoke" not in line
 
@@ -115,14 +115,71 @@ def test_rhonica_is_told_the_time_and_what_happened():
 def test_with_no_calls_she_knows_it_is_the_first():
     ctx = call_history.agent_context({"id": "hist-none", "contact_name": None}, now=NOW)
     assert ctx["call_history"] == "No earlier calls. This is the first time you are calling them."
-    assert ctx["opener"].startswith("Hey there, it's Rhonica. I'm an AI assistant")
+    assert ctx["opener"].startswith("Hey there, it's Rhonica from the accounts team at")
 
 
-def test_every_opener_says_she_is_an_ai_and_the_call_is_being_recorded():
-    """Whatever the history, the first line carries both disclosures."""
+def test_every_opener_names_the_company_and_says_the_call_is_recorded():
+    """She opens as the accounts team rather than announcing she is an AI, but
+    every version still says who is calling and that the call is recorded."""
     recent = {"at": (NOW - timedelta(hours=2)).isoformat()}
     older = {"at": (NOW - timedelta(days=3)).isoformat()}
     for spoke, tried in ((None, None), (recent, recent), (older, older), (None, older)):
         line = call_history.opener("Sam", "FusionTech", spoke, tried, NOW)
-        assert "AI assistant" in line, line
+        assert "accounts team" in line and "FusionTech" in line, line
         assert "this call is being recorded" in line, line
+        assert "AI" not in line, line
+
+
+def test_vague_dates_come_with_real_ones():
+    """The dates behind "early next week" and friends are worked out before she
+    dials, so she never does calendar arithmetic on the phone. On a Sunday,
+    next week starts tomorrow."""
+    assert call_history._calendar(NOW).splitlines() == [
+        "Today is Sunday the thirteenth of September.",
+        "Tomorrow: Monday the fourteenth.",
+        "Next week: Monday the fourteenth, Tuesday the fifteenth, Wednesday the sixteenth, "
+        "Thursday the seventeenth, Friday the eighteenth.",
+        "Early next week: Monday the fourteenth.",
+        "Middle of next week: Wednesday the sixteenth.",
+        "Late next week: Thursday the seventeenth, or Friday the eighteenth.",
+        "The week after next: Monday the twenty first to Friday the twenty fifth.",
+        "End of this month: Wednesday the thirtieth.",
+        "Start of next month: Thursday the first of October.",
+        "End of next month: Friday the thirtieth of October.",
+    ]
+
+
+def test_midweek_she_gets_the_rest_of_the_week_and_the_month_when_it_changes():
+    wednesday = call_history._calendar(datetime(2026, 9, 23, 10, 0, tzinfo=NY)).splitlines()
+    assert "The rest of this week: Thursday the twenty fourth, Friday the twenty fifth." in wednesday
+    assert ("Next week: Monday the twenty eighth, Tuesday the twenty ninth, Wednesday the thirtieth, "
+            "Thursday the first of October, Friday the second of October.") in wednesday
+    assert "Late next week: Thursday the first of October, or Friday the second of October." in wednesday
+
+
+def test_the_end_of_the_month_is_a_working_day():
+    october = call_history._calendar(datetime(2026, 10, 5, 10, 0, tzinfo=NY))
+    assert "End of this month: Friday the thirtieth." in october                # the 31st is a Saturday
+    assert "Start of next month: Monday the second of November." in october     # the 1st is a Sunday
+
+
+def test_on_the_last_working_day_she_looks_to_next_month():
+    last = call_history._calendar(datetime(2026, 10, 30, 10, 0, tzinfo=NY))   # a Friday
+    assert "End of this month" not in last and "The rest of this week" not in last
+    assert "End of next month: Monday the thirtieth of November." in last
+
+
+def test_december_runs_into_january():
+    december = call_history._calendar(datetime(2026, 12, 14, 10, 0, tzinfo=NY))
+    assert "Start of next month: Friday the first of January." in december
+
+
+def test_ordinals_read_like_speech():
+    said = [call_history.say_ordinal(n) for n in (1, 2, 3, 11, 12, 20, 21, 22, 30, 31)]
+    assert said == ["first", "second", "third", "eleventh", "twelfth", "twentieth",
+                    "twenty first", "twenty second", "thirtieth", "thirty first"]
+
+
+def test_rhonica_gets_the_calendar_with_her_context():
+    ctx = call_history.agent_context({"id": "hist-none", "contact_name": None}, now=NOW)
+    assert ctx["calendar"].startswith("Today is Sunday the thirteenth of September.")

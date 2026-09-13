@@ -327,6 +327,12 @@ def set_fields(table: str, row_id: str, **fields: Any) -> None:
                      (*fields.values(), row_id))
 
 
+def delete(table: str, where: str, params: tuple = ()) -> int:
+    """Remove the rows that match, and say how many went."""
+    with cursor() as conn:
+        return conn.execute(f"DELETE FROM {table} WHERE {where}", params).rowcount
+
+
 def log_run(stage: str, detail: str, run_id: int | None = None) -> None:
     from datetime import datetime, timezone
     with cursor() as conn:

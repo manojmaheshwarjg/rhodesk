@@ -470,14 +470,30 @@ behalf of a business, chasing an unpaid invoice or renegotiating a vendor
 contract, and extract what was actually agreed.
 
 Return JSON:
-{"result": "commitment"|"partial"|"dispute"|"deferred"|"refused"|"agreed"|"cancelled"|"none",
+{"result": "commitment"|"partial"|"deferred"|"dispute"|"refused"|"agreed"|"cancelled"|"none",
  "answered": true,
  "summary": "one sentence a finance person would want in the log",
  "commitments": [{"label": "...", "value": "..."}],
  "sentiment": "cooperative"|"neutral"|"strained"|"frustrated"}
 
-Record only what the other party actually committed to. If nothing was agreed,
-use "none" and an empty commitments list. Never invent a date or an amount."""
+What each result means:
+- commitment: they agreed to pay the full amount by a specific day.
+- partial: they agreed to pay part of it by a specific day.
+- deferred: no payment day, but a next step was agreed, such as a call back or
+  a colleague getting in touch.
+- dispute: they dispute the invoice or part of it.
+- refused: they said they will not pay.
+- agreed: new terms with a vendor were agreed.
+- cancelled: a subscription or contract is being cancelled.
+- none: nothing was agreed.
+
+A rough time is not a payment day. "Next week" or "end of the month" with no
+day named, or a promise to think about a plan, is deferred, never commitment
+or partial.
+
+Record only what the other party actually committed to, with any day exactly
+as agreed, for example "Monday 14 September". If nothing was agreed, use
+"none" and an empty commitments list. Never invent a date or an amount."""
 
 
 def extract_outcome(transcript: list[dict], counterparty: str) -> dict:

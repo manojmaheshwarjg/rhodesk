@@ -153,6 +153,11 @@ def counterparty(cp_id: str) -> dict:
         raise HTTPException(404, "unknown counterparty")
     row = _enrich(row)
     row["calls"] = db.query("calls", "counterparty_id = ?", (cp_id,), "created_at DESC")
+    # The board's own rule for offering a Call button, so the drawer and the
+    # row it was opened from never disagree.
+    blocked = {n.lower() for n in desk_settings.get().get("do_not_call", [])}
+    row["callable"] = ((row.get("verdict") or "none") in CALLABLE_VERDICTS
+                       and row["display_name"].lower() not in blocked)
     return row
 
 
@@ -865,6 +870,22 @@ def counterparty_calls(cp_id: str) -> dict:
     return {"counterparty_id": cp_id, "display_name": row["display_name"],
             "calls": call_history.for_counterparty(cp_id),
             "agent_context": call_history.agent_context(row)}
+
+
+@app.delete("/api/counterparties/{cp_id}/calls")
+def clear_timeline(cp_id: str) -> dict:
+    """Clear timeline, for demos: forget every real call to this counterparty,
+    so Rhonica's next call opens as a first one. The calls are deleted rather
+    than hidden, so the board, the Calls tab and her context all start fresh
+    together. Rehearsals are left alone; nothing reads them."""
+    if not db.one("counterparties", cp_id):
+        raise HTTPException(404, "unknown counterparty")
+    _finish_open_calls(cp_id)
+    real = "counterparty_id = ? AND COALESCE(to_number, '') != 'browser'"
+    if db.query("calls", f"{real} AND state IN ('live', 'wrapping')", (cp_id,)):
+        raise HTTPException(409, "Rhonica is still on a call with them. "
+                                 "Clear the timeline once it ends.")
+    return {"cleared": db.delete("calls", real, (cp_id,))}
 
 
 # --- calls log -------------------------------------------------------------

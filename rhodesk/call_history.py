@@ -8,7 +8,8 @@ because an ElevenLabs first message is fixed text and cannot branch.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from calendar import monthrange
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from . import config, db
@@ -39,7 +40,8 @@ def for_counterparty(cp_id: str) -> list[dict]:
 
 def agent_context(cp: dict, now: datetime | None = None) -> dict[str, str]:
     """What Rhonica is told about earlier calls, as dynamic variables: the
-    current time, the history, and the line she opens with."""
+    current time, the real dates behind phrases like "early next week", the
+    history, and the line she opens with."""
     now = now or datetime.now(ZoneInfo(config.TIMEZONE))
     done = [c for c in for_counterparty(cp["id"]) if c["state"] == "done"]
 
@@ -57,6 +59,7 @@ def agent_context(cp: dict, now: datetime | None = None) -> dict[str, str]:
     spoke = next((c for c in done if _answered(c)), None)
     return {
         "now": _written(now, year=True),
+        "calendar": _calendar(now),
         "call_history": "\n".join(lines) or "No earlier calls. This is the first time you are calling them.",
         "opener": opener(cp.get("contact_name"), config.COMPANY_NAME, spoke,
                          done[0] if done else None, now),
@@ -65,24 +68,24 @@ def agent_context(cp: dict, now: datetime | None = None) -> dict[str, str]:
 
 def opener(contact_name: str | None, company: str, spoke: dict | None,
            tried: dict | None, now: datetime) -> str:
-    """The first thing Rhonica says, in the voice of the opener used on real
-    calls. Every version says she is an AI and that the call is being
-    recorded. What changes is whether they have spoken before: "we spoke" is
-    only said when someone actually answered."""
+    """The first thing Rhonica says: a normal call from the accounts team. It
+    names the company and says the call is being recorded. It does not lead
+    with being an AI; the prompt has her say so plainly if anyone asks. "We
+    spoke" is only said when someone actually answered."""
     name = contact_name or "there"
     recorded = "and I should mention this call is being recorded"
     if spoke:
         at = _parse(spoke["at"])
         still = (now - at).total_seconds() < RECENT_SECONDS
-        return (f"Hey {name}, it's Rhonica again, the AI assistant from {company}. "
+        return (f"Hey {name}, it's Rhonica again from the {company} accounts team. "
                 f"We spoke {say_ago(at, now)}, {recorded} too. "
                 + ("Is now still a good time for a quick chat?" if still
                    else "Is now a good time for a quick chat?"))
     if tried:
-        return (f"Hey {name}, it's Rhonica. I'm an AI assistant calling from {company}. "
+        return (f"Hey {name}, it's Rhonica from the accounts team at {company}. "
                 f"I tried you {say_ago(_parse(tried['at']), now)}, {recorded}. "
                 "Is now a good time for a quick chat?")
-    return (f"Hey {name}, it's Rhonica. I'm an AI assistant calling from {company}, "
+    return (f"Hey {name}, it's Rhonica from the accounts team at {company}, "
             f"{recorded}. Is now a good time for a quick chat?")
 
 
@@ -173,3 +176,83 @@ def _written(t: datetime, year: bool = False) -> str:
 
 def _label(key: str) -> str:
     return str(key).replace("_", " ").replace("-", " ").capitalize()
+
+
+# --- dates people say out loud ------------------------------------------------
+# Models get calendar arithmetic wrong mid-call, and a suggested date is only
+# useful if it is the right one. So the days behind the phrases people use are
+# worked out here, before she dials, and she proposes from these.
+
+_ORDINALS = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh",
+             "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth",
+             "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"]
+
+
+def say_ordinal(n: int) -> str:
+    """14 is "fourteenth", 21 is "twenty first", 30 is "thirtieth"."""
+    if n < 20:
+        return _ORDINALS[n]
+    tens, ones = divmod(n, 10)
+    word = {2: "twenty", 3: "thirty"}[tens]
+    return f"{word} {_ORDINALS[ones]}" if ones else f"{word[:-1]}ieth"
+
+
+def _spoken_day(d: date, today: date | None = None) -> str:
+    """"Monday the fourteenth", naming the month only when it is not this one."""
+    said = f"{d:%A} the {say_ordinal(d.day)}"
+    if today and (d.year, d.month) == (today.year, today.month):
+        return said
+    return f"{said} of {d:%B}"
+
+
+def _weekdays(first: date, last: date) -> list[date]:
+    span = (first + timedelta(days=i) for i in range((last - first).days + 1))
+    return [d for d in span if d.weekday() < 5]
+
+
+def _first_weekday(year: int, month: int) -> date:
+    d = date(year, month, 1)
+    while d.weekday() >= 5:
+        d += timedelta(days=1)
+    return d
+
+
+def _last_weekday(year: int, month: int) -> date:
+    d = date(year, month, monthrange(year, month)[1])
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
+def _calendar(now: datetime) -> str:
+    """The real dates behind what people say, as of today. Next week starts on
+    the Monday after today, so on a Sunday it starts tomorrow. Only working
+    days are listed as days to suggest."""
+    today = now.date()
+
+    def say(d: date) -> str:
+        return _spoken_day(d, today)
+
+    def run(first: date, last: date) -> str:
+        return ", ".join(say(d) for d in _weekdays(first, last))
+
+    monday = today + timedelta(days=7 - today.weekday())
+    friday = monday + timedelta(days=4)
+    lines = [f"Today is {_spoken_day(today)}.",
+             f"Tomorrow: {say(today + timedelta(days=1))}."]
+    if today.weekday() < 4:
+        lines.append(f"The rest of this week: {run(today + timedelta(days=1), friday - timedelta(days=7))}.")
+    lines += [
+        f"Next week: {run(monday, friday)}.",
+        f"Early next week: {say(monday)}.",
+        f"Middle of next week: {say(monday + timedelta(days=2))}.",
+        f"Late next week: {say(monday + timedelta(days=3))}, or {say(friday)}.",
+        f"The week after next: {say(monday + timedelta(days=7))} to {say(friday + timedelta(days=7))}.",
+    ]
+    year, month = (today.year + 1, 1) if today.month == 12 else (today.year, today.month + 1)
+    month_end = _last_weekday(today.year, today.month)
+    if month_end > today:
+        lines.append(f"End of this month: {say(month_end)}.")
+    lines += [f"Start of next month: {say(_first_weekday(year, month))}.",
+              f"End of next month: {say(_last_weekday(year, month))}."]
+    return "\n".join(lines)

@@ -26,7 +26,8 @@ button{font-family:inherit;cursor:pointer}
 .navscroll{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin}
 .brand{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;flex-shrink:0;
   border-bottom:1px solid var(--ln-s);margin:0 -16px;padding:0 24px}
-.brand .chev{color:var(--gr2)}
+/* collapse-sidebar icon: present so the shape is right, not wired up */
+.brand .sbtoggle{color:var(--gr2);flex-shrink:0}
 /* The house treatment for naming a Rho module: the wordmark, then a black
    pill superscript that wipes in left to right, revealing the badge and the
    word together. Lifted from Rho's own "Rho CLOSE" lockup. */
@@ -115,7 +116,12 @@ th.ai-head{background:linear-gradient(94deg,rgba(4,236,193,.16),rgba(155,184,255
 .nocall,.queued{font-size:13px;color:var(--gr3);white-space:nowrap}
 .calls{border-radius:0 0 12px 12px;box-shadow:inset 0 1px 0 var(--ln-s)}
 .calls tbody tr.callrow{cursor:pointer}
-.calls tbody tr.callrow:hover{background:var(--ln-s)}
+/* Every row that opens a drawer says so under the pointer, in all three tables. */
+.board tbody tr[data-id],.board tbody tr[data-callrow]{cursor:pointer}
+/* One hover tint for every table, in the pale surface the KPI tiles and the
+   transcript already use. The research columns are only faintly tinted and
+   see-through, so it still shows evenly across the whole row. */
+.board tbody tr[data-id]:hover,.calls tbody tr.callrow:hover{background:#F7F9F9}
 .calls .when{font-size:13px;color:var(--gr);font-variant-numeric:tabular-nums}
 .calls .said{font-size:13px;color:var(--ink2);line-height:1.5}
 .calls .res{font-size:14px;font-weight:500}
@@ -210,8 +216,49 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 /* drawer */
 .scrim{position:fixed;inset:0;background:rgba(21,23,22,.28);display:none;z-index:40}
 .scrim.on{display:block}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(920px,92vw);background:#fff;border-left:1px solid var(--ln);z-index:41;display:none;flex-direction:column;overflow:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,94vw);background:#fff;border-left:1px solid var(--ln);z-index:41;display:none;flex-direction:column;overflow:auto}
 .drawer.on{display:flex}
+/* Drawers read top to bottom like a profile. The header is shared: who it is
+   about, one line of context, and the actions on the right. */
+.drhd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 16px;align-items:center;
+  padding:22px 28px 20px;border-bottom:1px solid var(--ln-s)}
+.drid{display:flex;align-items:center;gap:14px;min-width:0}
+.dravatar{width:44px;height:44px;border-radius:11px;background:var(--mint-l);color:var(--mint-t);
+  font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.drtitle{margin:0;font-size:21px;font-weight:500;letter-spacing:-.025em;line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drsub{margin:3px 0 0;font-size:13px;color:var(--gr2)}
+.dracts{display:flex;gap:8px;flex-shrink:0}
+.drwhy{grid-column:1 / -1;margin:0;display:flex;gap:10px;align-items:baseline;padding:11px 14px;
+  background:#F7F9F9;border:1px solid var(--ln-s);border-radius:10px;font-size:14px;color:var(--ink2);line-height:1.5}
+.drwhy .verdict{flex-shrink:0}
+.drbody{padding:4px 28px 28px}
+.drsec{padding:20px 0;border-bottom:1px solid var(--ln-s)}
+.drsec:last-child{border-bottom:0}
+.drsec .lbl{margin:0 0 8px}
+.drsec .kv:last-child{border-bottom:0}
+.drsplit{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:2px}
+.drsplit .lbl{margin:0}
+.drsplit .tlink{display:inline;margin:0}
+.drnote{margin:0;font-size:15px;line-height:1.6;color:var(--ink)}
+.drbig{margin:0;font-size:22px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.drbig small{font-size:14px;font-weight:400;color:var(--gr);letter-spacing:0}
+.drmeta{margin:2px 0 10px;font-size:13px;color:var(--gr)}
+.drrow{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-top:1px solid var(--ln-s);font-size:14px}
+.drrow .ref{font-weight:500;min-width:48px}
+.drrow .amt{margin-left:auto;font-variant-numeric:tabular-nums}
+.drrow .late{min-width:128px;text-align:right;font-size:13px;color:var(--gr2)}
+.drrow .late.bad{color:var(--red-t)}
+.drcall{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px;color:var(--ink2)}
+.drcall .when{min-width:150px;font-size:13px;color:var(--gr2);font-variant-numeric:tabular-nums}
+.drdot{width:8px;height:8px;border-radius:50%;background:var(--gr3);flex-shrink:0}
+.drdot.good{background:var(--mint-d)}
+.drdot.bad{background:var(--red-t)}
+.drdot.live{background:var(--mint);animation:p 1.6s ease-in-out infinite}
+.drres{margin:0 0 4px;font-size:17px;font-weight:500}
+.drres.good,.drres.live{color:var(--mint-t)}
+.drres.bad{color:var(--red-t)}
+.drempty{margin:0;font-size:14px;color:var(--gr2)}
 .dhd{padding:24px 30px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--ln-s)}
 .dbody{padding:22px 30px;display:grid;grid-template-columns:1.4fr 1fr;gap:26px}
 .dbody.one{grid-template-columns:1fr}
@@ -284,7 +331,16 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .tlsum{margin:3px 0 0;font-size:14px;color:var(--ink2);line-height:1.5}
 .tlkv{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--gr)}
 .tlkv b{font-weight:500;color:var(--ink2)}
-.tlnote{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--ln-s);font-size:12px;color:var(--gr2)}
+.tlnote{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--ln-s);font-size:12px;color:var(--gr2);
+  display:flex;align-items:baseline;justify-content:space-between;gap:20px}
+.tlnote p{margin:0}
+/* Clear timeline: a small dev link that asks once, inline, before it deletes */
+.tlacts{display:flex;gap:14px;flex-shrink:0}
+.tlacts:empty{display:none}
+.tlacts .tlink{display:inline;margin:0}
+.tlink.muted{color:var(--gr)}
+.tlink.bad{color:var(--red-t)}
+.tlink:disabled{opacity:.5;cursor:default}
 
 /* minimized */
 .cdock{position:fixed;right:26px;bottom:26px;z-index:52;display:flex;align-items:center;gap:10px;
@@ -406,7 +462,7 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 <body>
 <div class="app">
   <aside class="sb">
-    <div class="brand"><span class="lockup"><svg width="52" height="24" viewBox="0 0 63 29" fill="none" aria-label="Rho"><path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/><path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/><path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/></svg><span class="deskmark">DESK</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+    <div class="brand"><span class="lockup"><svg width="52" height="24" viewBox="0 0 63 29" fill="none" aria-label="Rho"><path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/><path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/><path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/></svg><span class="deskmark">DESK</span></span><svg class="sbtoggle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></div>
 
     <button class="org">
       <span class="oav" id="orgInitials">FT</span>

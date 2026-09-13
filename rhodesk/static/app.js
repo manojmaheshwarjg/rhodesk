@@ -210,7 +210,7 @@ function captionOf(call) {
     case "connected": return { text: "Rhonica is on the line" };
     case "wrapping": return { text: "Rhonica is writing the summary", busy: true };
     case "done": return { text: "Rhonica is resting" };
-    default: return { text: "Rhonica is dialing", busy: true };
+    default: return { text: "Rhonica is now locking in", busy: true };
   }
 }
 
@@ -498,7 +498,7 @@ function singleShell(cp) {
     <div class="cbody">
       <div class="orbwrap">
         <canvas class="corb" id="cmOrb"></canvas>
-        <p class="cstate"><span class="cmcap" id="cmStatus" data-key="Rhonica is dialing\u2026">Rhonica is dialing<span class="cmdots"><i>.</i><i>.</i><i>.</i></span></span><span class="t" id="cmTime">0:00</span></p>
+        <p class="cstate"><span class="cmcap" id="cmStatus" data-key="Rhonica is now locking in\u2026">Rhonica is now locking in<span class="cmdots"><i>.</i><i>.</i><i>.</i></span></span><span class="t" id="cmTime">0:00</span></p>
       </div>
       <div id="cmOutcome"></div>
       <p class="lbl">Transcript</p>
@@ -523,7 +523,7 @@ function batchShell(calls, noun) {
         <div class="ctile" data-tile="${esc(c.id)}">
           <canvas class="corb"></canvas>
           <p class="cname">${esc(c.counterparty_name)}</p>
-          <p class="cstat">Rhonica is dialing\u2026</p>
+          <p class="cstat">Rhonica is now locking in\u2026</p>
           <p class="ctime">0:00</p>
         </div>`).join("")}</div>
     </div>`;

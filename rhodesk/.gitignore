@@ -1,5 +1,0 @@
-.venv/
-.env
-rhodesk.db*
-__pycache__/
-*.pyc

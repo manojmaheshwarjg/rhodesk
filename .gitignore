@@ -1,17 +1,7 @@
-# secrets
-.env
-
-# python
 .venv/
+.env
+rhodesk.db*
 __pycache__/
 *.pyc
-
-# local state
-*.db
-*.db-wal
-*.db-shm
-
-# scraped third-party pages, not ours to republish
-research/corpus/
 
 .DS_Store

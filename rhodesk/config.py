@@ -78,6 +78,10 @@ DEMO_VENDORS = _flag("DEMO_VENDORS", "true").lower() in ("1", "true", "yes")
 # runs that genuinely differ, and waiting a day for one is not a demo.
 FIXTURE_DAYS_AGO = int(_flag("FIXTURE_DAYS_AGO", "0"))
 
+# Research runs on a clock, not on a button. Local hour, 24h.
+RESEARCH_HOUR = int(_flag("RESEARCH_HOUR", "17"))
+SCHEDULER_ENABLED = _flag("SCHEDULER_ENABLED", "true").lower() in ("1", "true", "yes")
+
 
 def reading_date():
     """The date the desk is reading the ledger as of. Today, unless a demo has

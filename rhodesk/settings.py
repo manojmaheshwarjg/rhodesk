@@ -40,7 +40,7 @@ DEFAULTS: dict = {
     # Safety
     "do_not_call": [],
     "demo_override_number": config.DEMO_OVERRIDE_NUMBER,
-    "calls_per_run": 5,
+    "calls_per_run": 3,
 }
 
 

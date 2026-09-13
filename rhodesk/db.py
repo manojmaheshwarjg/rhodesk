@@ -39,7 +39,13 @@ CREATE TABLE IF NOT EXISTS counterparties (
     demo              INTEGER NOT NULL DEFAULT 0,
     first_seen_run    INTEGER,
     last_seen_run     INTEGER,
-    first_seen_at     TEXT
+    first_seen_at     TEXT,
+    note              TEXT,
+    note_source       TEXT,
+    note_date         TEXT,
+    note_url          TEXT,
+    verdict           TEXT,
+    verdict_reason    TEXT
 );
 
 CREATE TABLE IF NOT EXISTS signals (
@@ -145,6 +151,16 @@ CREATE TABLE IF NOT EXISTS changes (
 """
 
 INDEXES = """
+CREATE TABLE IF NOT EXISTS notifications (
+    id       TEXT PRIMARY KEY,
+    at       TEXT,
+    kind     TEXT,
+    title    TEXT NOT NULL,
+    detail   TEXT,
+    run_id   INTEGER,
+    read_at  TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_signals_cp ON signals(counterparty_id);
 CREATE INDEX IF NOT EXISTS idx_calls_cp ON calls(counterparty_id);
 CREATE INDEX IF NOT EXISTS idx_hist_run ON counterparty_history(run_id);
@@ -181,6 +197,12 @@ def cursor():
 # holds is the point.
 _ADDED_COLUMNS = {
     "counterparties": {
+        "note": "TEXT",
+        "note_source": "TEXT",
+        "note_date": "TEXT",
+        "note_url": "TEXT",
+        "verdict": "TEXT",
+        "verdict_reason": "TEXT",
         "first_seen_run": "INTEGER",
         "last_seen_run": "INTEGER",
         "first_seen_at": "TEXT",
@@ -233,7 +255,7 @@ def reset() -> None:
     a run no longer calls this."""
     with cursor() as conn:
         for table in ("signals", "calls", "counterparties", "runs", "run_events",
-                      "counterparty_history", "changes"):
+                      "counterparty_history", "changes", "notifications"):
             conn.execute(f"DELETE FROM {table}")
 
 

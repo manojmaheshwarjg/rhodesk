@@ -4,13 +4,13 @@ from __future__ import annotations
 import json
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import config, db, history, pipeline, settings as desk_settings, today as today_module, voice
+from . import config, db, history, pipeline, scheduler, settings as desk_settings, today as today_module, voice
 from .llm import LLMClient
 from . import rho as rho_module
 from .rho import RhoError
@@ -31,6 +31,7 @@ def _now() -> str:
 @app.on_event("startup")
 def _startup() -> None:
     db.init()
+    scheduler.start()
 
 
 # --- status and setup ------------------------------------------------------
@@ -224,25 +225,45 @@ async def start_call(request: Request) -> dict:
             "to_number": to_number, "provider_error": started.get("error")}
 
 
+def _advance_sim(row: dict) -> dict:
+    """Reveal a scripted call one turn at a time, and close it when the script
+    runs out. Shared, because a call whose modal was closed has nothing else
+    polling it and would otherwise read as "on the call now" forever."""
+    sim = row.get("sim_plan") or {}
+    if not sim.get("script") or row.get("state") != "live":
+        return row
+    started = datetime.fromisoformat(row["created_at"])
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    script = sim["script"]
+    reveal = min(int(elapsed / TURN_SECONDS) + 1, len(script))
+    row["transcript"] = script[:reveal]
+    row["elapsed_seconds"] = int(elapsed)
+    if reveal >= len(script) and elapsed > len(script) * TURN_SECONDS:
+        db.set_fields("calls", row["id"], state="done", ended_at=_now(),
+                      transcript=json.dumps(script),
+                      outcome=json.dumps(sim["outcome"]))
+        row.update(state="done", transcript=script, outcome=sim["outcome"])
+    return row
+
+
 @app.get("/api/calls/{call_id}")
 def call_state(call_id: str) -> dict:
     row = db.one("calls", call_id)
     if not row:
         raise HTTPException(404, "unknown call")
 
-    sim = row.get("sim_plan") or {}
-    if sim.get("script") and row["state"] == "live":
-        started = datetime.fromisoformat(row["created_at"])
-        elapsed = (datetime.now(timezone.utc) - started).total_seconds()
-        script = sim["script"]
-        reveal = min(int(elapsed / TURN_SECONDS) + 1, len(script))
-        row["transcript"] = script[:reveal]
-        row["elapsed_seconds"] = int(elapsed)
-        if reveal >= len(script) and elapsed > len(script) * TURN_SECONDS:
-            db.set_fields("calls", call_id, state="done", ended_at=_now(),
-                          transcript=json.dumps(script),
-                          outcome=json.dumps(sim["outcome"]))
-            row.update(state="done", transcript=script, outcome=sim["outcome"])
+    # A real phone call has no webhook to close it, so the poll that draws the
+    # call modal is what keeps it honest: it streams the transcript while the
+    # call runs and writes the outcome the moment it ends.
+    if row["state"] == "live":
+        try:
+            changed = voice.sync_call(row)
+        except Exception:  # noqa: BLE001 - the modal must still render
+            changed = None
+        if changed:
+            row.update(changed)
+
+    _advance_sim(row)
     cp = db.one("counterparties", row["counterparty_id"]) or {}
     row["counterparty_name"] = cp.get("display_name", "")
     return row
@@ -265,9 +286,16 @@ def end_call(call_id: str) -> dict:
 
 @app.get("/api/calls")
 def calls() -> list[dict]:
-    rows = db.query("calls", order="created_at DESC")
+    # Catches anything left open by a modal that was closed mid-call.
+    try:
+        voice.reconcile()
+    except Exception:  # noqa: BLE001 - the log must render regardless
+        pass
+    rows = [c for c in db.query("calls", order="created_at DESC")
+            if not is_rehearsal(c)]
     names = {c["id"]: c["display_name"] for c in db.query("counterparties")}
     for r in rows:
+        _advance_sim(r)
         r["counterparty_name"] = names.get(r["counterparty_id"], r["counterparty_id"])
     return rows
 
@@ -412,6 +440,11 @@ async def finish_call(call_id: str, request: Request) -> dict:
         raise HTTPException(404, "unknown call")
     body = await request.json()
     turns = body.get("transcript") or row.get("transcript") or []
+    if is_rehearsal(row):
+        # Keep what was said, draw no conclusions from it.
+        db.set_fields("calls", call_id, state="done", ended_at=_now(),
+                      transcript=json.dumps(turns), outcome=json.dumps({}))
+        return {"ok": True, "outcome": {}, "rehearsal": True}
     cp = db.one("counterparties", row["counterparty_id"]) or {}
     outcome = voice.extract_outcome(turns, cp.get("display_name", "the counterparty"))
     db.set_fields("calls", call_id, state="done", ended_at=_now(),
@@ -467,7 +500,8 @@ def queue() -> dict:
     calls = db.query("calls", order="created_at DESC")
     last_call = {}
     for c in calls:
-        last_call.setdefault(c["counterparty_id"], c)
+        if not is_rehearsal(c):
+            last_call.setdefault(c["counterparty_id"], c)
 
     items = []
     for r in rows:
@@ -501,6 +535,224 @@ def queue() -> dict:
         "needs_approval_above": cfg["approval_threshold_cents"],
         "calls_per_run": cfg["calls_per_run"],
         "already_called": sum(1 for i in items if i["last_call"]),
+    }
+
+
+# --- notifications ---------------------------------------------------------
+
+@app.get("/api/notifications")
+def notifications(limit: int = 20) -> dict:
+    rows = db.rows("SELECT * FROM notifications ORDER BY at DESC LIMIT ?", (limit,))
+    return {
+        "notifications": rows,
+        "unread": db.scalar("SELECT COUNT(*) FROM notifications WHERE read_at IS NULL") or 0,
+        "schedule": scheduler.status(),
+    }
+
+
+@app.post("/api/notifications/read")
+def mark_read() -> dict:
+    db.execute("UPDATE notifications SET read_at = ? WHERE read_at IS NULL", (_now(),))
+    return {"ok": True}
+
+
+@app.post("/api/research")
+def research_now() -> dict:
+    """Run what the schedule would have run. Same code path, same notification,
+    so nothing about the result depends on who started it."""
+    return scheduler.run_once(trigger="manual")
+
+
+# --- the workflow ----------------------------------------------------------
+
+def _place_call(row: dict, *, live: bool, approved_by: str) -> str:
+    """Create one call row. `live` decides whether this one goes out over the
+    carrier; the rest of the batch runs the scripted path. Either way the call
+    lands in the same table with the same shape, so the board reads one way."""
+    cfg = desk_settings.get()
+    sigs = db.query("signals", "counterparty_id = ?", (row["id"],))
+    brief_doc = pipeline.build_brief(row, sigs, LLMClient())
+    to_number = cfg.get("demo_override_number") or row.get("contact_phone") or ""
+
+    started = (voice.VoiceClient().start_call(row, brief_doc, to_number)
+               if live else {"provider_ref": f"sim_{uuid.uuid4().hex[:10]}", "simulated": True})
+    sim_plan = voice.simulate(row, brief_doc, sigs) if started.get("simulated") else {}
+
+    call_id = uuid.uuid4().hex
+    db.upsert("calls", [{
+        "id": call_id, "counterparty_id": row["id"], "posture": row.get("posture"),
+        "state": "live", "to_number": to_number,
+        "brief": json.dumps({**brief_doc, "approved_by": approved_by}),
+        "transcript": "[]", "outcome": "{}",
+        "provider_ref": started.get("provider_ref", ""),
+        "simulated": 1 if started.get("simulated") else 0,
+        "created_at": _now(), "ended_at": None,
+        "sim_plan": json.dumps(sim_plan),
+    }])
+    return call_id
+
+
+@app.post("/api/workflow")
+async def run_workflow(request: Request) -> dict:
+    """Work the board. Every row the research qualified gets called.
+
+    Pressing this is the approval: the API still refuses an unapproved call
+    above the threshold, and the operator's name is recorded on each brief.
+    """
+    body = await request.json() if await request.body() else {}
+    which = body.get("tab", "collect")
+    approved_by = body.get("approved_by") or "Mike Spara"
+
+    data = board()
+    rows = data["collect"] if which == "collect" else data["cut"]
+    cfg = desk_settings.get()
+    blocked = {n.lower() for n in (cfg.get("do_not_call") or [])}
+
+    targets = [r for r in rows
+               if r.get("ready") and r["display_name"].lower() not in blocked]
+    if not targets:
+        return {"started": 0, "calls": []}
+
+    placed = []
+    for index, target in enumerate(targets):
+        row = db.one("counterparties", target["id"])
+        if not row:
+            continue
+        placed.append({"counterparty_id": row["id"],
+                       "display_name": row["display_name"],
+                       "call_id": _place_call(row, live=(index == 0),
+                                              approved_by=approved_by)})
+    return {"started": len(placed), "calls": placed, "approved_by": approved_by}
+
+
+@app.post("/api/counterparties/{cp_id}/draft")
+def draft_email(cp_id: str) -> dict:
+    """A renegotiation email for a vendor, written from the same research the
+    call would have used. Drafted only: nothing is sent from here."""
+    row = db.one("counterparties", cp_id)
+    if not row:
+        raise HTTPException(404, "unknown counterparty")
+    cfg = desk_settings.get()
+    system = ("You write short procurement emails for a finance team. Six sentences "
+              "at most. Plain, specific, no pleasantries, no exclamation marks. "
+              "Reference the finding, state what you want, and ask for a call. "
+              "Never invent numbers beyond the ones given. "
+              'Reply as JSON: {"subject": str, "body": str}.')
+    payload = (f"Company writing: {cfg['company_name']}\n"
+               f"Vendor: {row['display_name']}\n"
+               f"Current monthly spend: ${row.get('monthly_spend', 0) / 100:,.2f}\n"
+               f"What we found: {row.get('note') or 'nothing'}\n"
+               f"Why it is worth raising: {row.get('verdict_reason') or ''}")
+    fallback = {
+        "subject": f"{row['display_name']} renewal, current plan",
+        "body": (f"Hello,\n\nWe currently spend "
+                 f"${row.get('monthly_spend', 0) / 100:,.2f} a month with you. "
+                 f"{row.get('note') or ''}\n\nWe would like to review the plan "
+                 f"before the next renewal. Are you free for a short call this week?"
+                 f"\n\n{cfg['company_name']}"),
+    }
+    drafted = LLMClient().json_call(system, payload, fallback, max_tokens=600)
+    return {"to": row.get("contact_email") or "", "vendor": row["display_name"], **drafted}
+
+
+# --- the board -------------------------------------------------------------
+
+CALLABLE_VERDICTS = {"call", "escalate"}
+
+
+def is_rehearsal(call: dict) -> bool:
+    """A browser session is the operator talking to the agent themselves, to
+    hear how it sounds before it dials anyone. Nobody was contacted, so it
+    never becomes an outcome on the board, a row in the call log, or a figure
+    in the stats. Only calls that reached a number count."""
+    return (call.get("to_number") or "") == "browser"
+
+
+def _last_call(cp_id: str, calls: list[dict]) -> dict | None:
+    for c in calls:
+        if c["counterparty_id"] == cp_id and not is_rehearsal(c):
+            outcome = c.get("outcome") or {}
+            return {
+                "state": c["state"],
+                "at": c.get("ended_at") or c.get("created_at"),
+                "result": outcome.get("result") or "",
+                "summary": outcome.get("summary") or "",
+            }
+    return None
+
+
+def _research_window(now: datetime) -> dict:
+    """Research runs on a schedule, not on a button. The board says when it
+    last ran and when it next will, because a stale board is a wrong board."""
+    last = history.run(history.current_run()) if history.current_run() else None
+    sched = scheduler.status()
+    return {
+        "last_run_at": (last or {}).get("finished_at"),
+        "next_run_at": sched["next_due"],
+        "counterparties": (last or {}).get("counterparties", 0),
+        "scheduled": sched["enabled"],
+    }
+
+
+@app.get("/api/board")
+def board() -> dict:
+    """Everything on one screen. Collect carries the receivables, with the ones
+    showing distress flagged rather than split into their own tab. Cut carries
+    recurring spend worth renegotiating."""
+    where, params = _current_scope()
+    rows = db.query("counterparties", where, params)
+    calls = db.query("calls", order="created_at DESC")
+    cfg = desk_settings.get()
+    blocked = {n.lower() for n in cfg.get("do_not_call", [])}
+
+    def shape(r: dict) -> dict:
+        verdict = r.get("verdict") or "none"
+        callable_ = (verdict in CALLABLE_VERDICTS
+                     and r["display_name"].lower() not in blocked)
+        return {
+            "id": r["id"], "display_name": r["display_name"],
+            "sector": r.get("sector") or "", "domain": r.get("domain") or "",
+            "outstanding": r["outstanding"], "oldest_days": r.get("oldest_days") or 0,
+            "open_invoices": r.get("open_invoices") or 0,
+            "ar_share": r.get("ar_share") or 0,
+            "monthly_spend": r.get("monthly_spend") or 0,
+            "duplicate": bool(r.get("duplicate")),
+            "note": r.get("note") or "", "note_source": r.get("note_source") or "",
+            "note_date": r.get("note_date") or "", "note_url": r.get("note_url") or "",
+            "verdict": verdict, "verdict_reason": r.get("verdict_reason") or "",
+            "callable": callable_,
+            "at_risk": verdict == "escalate",
+            "contact_email": r.get("contact_email") or "",
+            "last_call": _last_call(r["id"], calls),
+        }
+
+    collect = [shape(r) for r in rows if r["outstanding"] > 0]
+    collect.sort(key=lambda i: (not i["callable"], -i["outstanding"]))
+
+    cut = [shape(r) for r in rows
+           if r["monthly_spend"] > 0 and (r.get("verdict") or "none") != "none"]
+    cut.sort(key=lambda i: -i["monthly_spend"])
+
+    # Qualifying is not the same as being next. Only the top few are worked on
+    # this pass, so the board offers an action on those and queues the rest.
+    batch = max(1, int(cfg.get("calls_per_run") or 3))
+    for group in (collect, cut):
+        taken = 0
+        for item in group:
+            item["ready"] = item["callable"] and taken < batch
+            taken += item["ready"]
+
+    return {
+        "collect": collect,
+        "cut": cut,
+        "research": _research_window(datetime.now(timezone.utc)),
+        "totals": {
+            "outstanding": sum(i["outstanding"] for i in collect),
+            "callable": sum(1 for i in collect if i["callable"]),
+            "ready": sum(1 for i in collect if i["ready"]),
+            "at_risk": sum(1 for i in collect if i["at_risk"]),
+            "monthly_spend": sum(i["monthly_spend"] for i in cut),
+        },
     }
 
 
@@ -575,7 +827,7 @@ def timeline(cp_id: str) -> dict:
 
 @app.get("/api/call-stats")
 def call_stats() -> dict:
-    rows = db.query("calls")
+    rows = [c for c in db.query("calls") if not is_rehearsal(c)]
     done = [c for c in rows if c["state"] == "done"]
     answered = [c for c in done if (c.get("outcome") or {}).get("answered")]
     SECURES = {"commitment", "partial", "agreed", "cancelled"}

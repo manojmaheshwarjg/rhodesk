@@ -17,7 +17,7 @@ import uuid
 from collections import defaultdict
 from datetime import date, datetime, timezone
 
-from . import config, db, history
+from . import config, db, history, research_seed
 from .llm import LLMClient
 from . import rho as rho_module
 from .rho import RhoClient
@@ -709,7 +709,32 @@ COUNTERPARTY_COLUMNS = {
     "oldest_days", "ar_share", "recurring", "monthly_spend", "duplicate",
     "posture", "recommendation", "rationale", "risk", "contact_name",
     "contact_phone", "contact_email", "invoices", "researched_at", "demo",
+    "note", "note_source", "note_date", "note_url", "verdict", "verdict_reason",
 }
+
+
+def qualify(company: dict) -> dict:
+    """Attach the research note and decide what, if anything, to do about this
+    counterparty. The note is what a person reads to check the reasoning, so
+    the verdict never stands on its own.
+
+    Live research fills this in from Tavily. Seeded notes stand in where it
+    has not run, which is what keeps the board legible without a key.
+    """
+    seed = research_seed.for_counterparty(company)
+    if seed:
+        company.update(note=seed["note"], note_source=seed["source"],
+                       note_date=seed["date"], note_url=seed["url"],
+                       verdict=seed["verdict"], verdict_reason=seed["reason"])
+        return company
+
+    owed = company.get("outstanding", 0)
+    company.setdefault("note", "")
+    company["verdict"] = "call" if owed and company.get("oldest_days") else "none"
+    company["verdict_reason"] = ("Overdue with no adverse findings."
+                                 if company["verdict"] == "call"
+                                 else "Nothing outstanding and nothing recurring.")
+    return company
 
 
 def run_desk(progress=None) -> dict:
@@ -806,6 +831,7 @@ def _run_desk(run_id: int, say) -> dict:
         all_signals += signals
         signal_counts[company["id"]] = len(signals)
         classify(company, signals)
+        qualify(company)
         company["researched_at"] = _now()
         company.setdefault("demo", 0)
 

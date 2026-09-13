@@ -9,7 +9,7 @@
 :root{
   --mint:#6BFBD5; --mint-l:#D9FFF3; --mint-d:#04ECC1; --mint-t:#08A68A;
   --ink:#151716; --ink2:#222524; --gr:#666E6A; --gr2:#747D79; --gr3:#B4BDB7;
-  --ln:#D7E0DE; --ln-s:#EFF3F2; --bg:#F7F9F9;
+  --ln:#D7E0DE; --ln-s:#EFF3F2; --bg:#FFFFFF;
   --blue-b:#DFE5FB; --blue-t:#2E42A5;
   --amber-b:#FDF2D5; --amber-t:#7A5A08;
   --red-b:#FCE4DE; --red-t:#A33A22;
@@ -21,25 +21,154 @@ button{font-family:inherit;cursor:pointer}
 .app{display:flex;min-height:100vh}
 
 /* sidebar */
-.sb{width:224px;background:#fff;border-right:1px solid var(--ln-s);padding:0 12px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow:auto}
-.logo{height:64px;display:flex;align-items:center;gap:11px;padding:0 12px}
-.logo .rule{width:1px;height:18px;background:var(--mint-d)}
-.logo .desk{font-size:17px;letter-spacing:-.03em;color:var(--mint-t)}
-.org{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:12px}
-.org .dot{width:26px;height:26px;border-radius:50%;background:var(--ink2);color:var(--mint);font-size:11px;display:flex;align-items:center;justify-content:center}
-.nv{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;color:var(--gr);font-size:14px;border:0;background:none;width:100%;text-align:left}
+/* sidebar, matching the Rho portal chrome */
+.sb{width:292px;background:#F7F9F9;border-right:1px solid var(--ln);padding:0 16px 12px;flex-shrink:0;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.navscroll{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin}
+.brand{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;flex-shrink:0;
+  border-bottom:1px solid var(--ln-s);margin:0 -16px;padding:0 24px}
+.brand .chev{color:var(--gr2)}
+/* The house treatment for naming a Rho module: the wordmark, then a black
+   pill superscript that wipes in left to right, revealing the badge and the
+   word together. Lifted from Rho's own "Rho CLOSE" lockup. */
+.lockup{display:flex;align-items:flex-start;gap:1px}
+.lockup svg{flex-shrink:0}
+/* Proportions measured off the film at 4x: the badge is 0.53 of the wordmark's
+   cap height, its corner radius is 0.21 of its own height (a rounded rect, not
+   a pill), and the letters are set tight rather than tracked out. */
+.deskmark{display:inline-flex;align-items:center;height:14.5px;padding:0 4.8px;margin-top:1.5px;
+  border-radius:3.1px;background:var(--ink);color:#fff;
+  font-size:10.3px;font-weight:700;letter-spacing:.01em;line-height:1;white-space:nowrap;
+  animation:deskIn .6s cubic-bezier(.22,.7,.2,1) .45s both}
+@keyframes deskIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.deskmark{animation:none}}
+.org{display:flex;align-items:center;gap:11px;flex-shrink:0;padding:6px;border-radius:9px;border:0;background:none;width:100%;text-align:left;margin:10px 0 12px}
+.org:hover{background:var(--ln-s)}
+.org .oav{width:32px;height:32px;border-radius:9px;background:var(--ln-s);color:var(--ink);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.org .onm{flex-grow:1;font-size:15px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.org .chev{color:var(--gr2);flex-shrink:0}
+.nv{display:flex;align-items:center;gap:13px;padding:0 12px;height:36px;flex-shrink:0;border-radius:9px;color:var(--ink2);font-size:15px;border:0;background:none;width:100%;text-align:left}
+.nv svg{flex-shrink:0;color:var(--gr)}
 .nv:hover{background:var(--ln-s)}
-.nv.on{background:var(--mint-l);color:var(--mint-t)}
-.sec{font-size:11px;color:var(--gr3);letter-spacing:.06em;text-transform:uppercase;padding:18px 12px 6px}
-.svc{margin-top:18px;padding:12px;border-top:1px solid var(--ln-s);font-size:12px;color:var(--gr2)}
-.svc div{display:flex;align-items:center;gap:7px;padding:3px 0}
+.nv.on{background:var(--ln-s);color:var(--ink)}
+.nv.on svg{color:var(--ink)}
+/* the rest of the portal: present so the shape is right, not wired up */
+.nv.off{color:var(--gr2);cursor:default}
+.nv.off svg{color:var(--gr3)}
+.nv.off:hover{background:none}
+.sec{font-size:13px;color:var(--gr2);padding:16px 12px 3px;margin:0;flex-shrink:0}
+.subnav{padding:2px 0 4px;flex-shrink:0}
+.dsknav{display:flex;align-items:center;gap:10px;padding:0 13px 0 48px;height:42px;flex-shrink:0;border-radius:10px;color:var(--gr);font-size:15px;border:0;background:none;width:100%;text-align:left;position:relative}
+.dsknav::before{content:"";position:absolute;left:27px;top:0;bottom:0;width:1px;background:var(--ln)}
+.dsknav:hover{background:var(--ln-s);color:var(--ink2)}
+.dsknav.on{color:var(--mint-t);font-weight:500}
+.dsknav.on::before{background:var(--mint-d);width:2px;left:26px}
+.sbfoot{flex-shrink:0;padding:4px 0 0 2px}
+.svc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px}
+.svc div{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--ink2)}
+.svc div span:last-child{color:var(--gr2);font-size:13px;margin-left:auto}
 .led{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .led.on{background:#639922}.led.off{background:var(--gr3)}
+.helpbtn{display:inline-flex;align-items:center;gap:8px;width:auto;height:38px;padding:0 16px 0 13px;border:0;border-radius:10px;background:var(--ink);font-size:14px;color:#fff}
+.helpbtn:hover{background:var(--ink2)}
 
 /* main */
 .main{flex-grow:1;min-width:0;display:flex;flex-direction:column}
-.top{height:64px;background:#fff;border-bottom:1px solid var(--ln-s);display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:0 28px}
-.av{width:30px;height:30px;border-radius:50%;background:var(--mint-l);color:var(--mint-t);font-size:12px;display:flex;align-items:center;justify-content:center}
+.top{height:62px;background:#fff;border-bottom:1px solid var(--ln-s);display:flex;align-items:center;gap:14px;padding:0 40px;flex-shrink:0}
+.search{flex-grow:1;max-width:950px;height:36px;display:flex;align-items:center;gap:10px;padding:0 13px;
+  background:#F7F9F9;border:1px solid var(--ln-s);border-radius:9px;color:var(--gr2);font-size:15px}
+.search:focus-within{border-color:var(--ln);background:#fff}
+.search input{flex-grow:1;border:0;outline:0;font-family:inherit;font-size:15px;color:var(--ink);background:none;min-width:0}
+.search input::placeholder{color:var(--gr2)}
+.search .kbd{background:#fff}
+.kbd{font-size:12px;color:var(--gr2);border:1px solid var(--ln);border-radius:5px;padding:2px 6px;flex-shrink:0}
+/* The three columns the desk adds on top of the ledger. Grouped and tinted so
+   it reads as one thing rather than three more columns of numbers. */
+.ai{background:linear-gradient(180deg,rgba(4,236,193,.055),rgba(155,184,255,.07))}
+th.ai-head{background:linear-gradient(94deg,rgba(4,236,193,.16),rgba(155,184,255,.18),rgba(233,168,255,.16));
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gr);font-weight:500;
+  text-align:center;padding:7px 12px;border-radius:8px 8px 0 0}
+/* :first-of-type means the first th in the row, not the first .ai one, so the
+   group's left edge never rendered. Marked explicitly instead. */
+/* Subtle column rules. Scoped to the header row that actually has columns,
+   so the band row's colspan spacers stay clean. The researched group's own
+   edges are raised above these so they still read as a group. */
+.board thead tr:last-child th:not(:last-child),
+.board tbody td:not(:last-child){border-right:1px solid var(--ln-s)}
+.board .ai-start{border-left:1px solid rgba(4,236,193,.4)}
+.board .ai-end{border-right:1px solid rgba(155,184,255,.5)}
+.board th.num{padding-right:18px}
+/* A header can never bleed past its own column and across the band edge. */
+.board th{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* Values overflow across the band edge just as readily as headers do. */
+.board td.num{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.btn,.btn2{white-space:nowrap}
+.note{font-size:13px;line-height:1.5;color:var(--ink2);margin:0}
+.cite{font-size:12px;color:var(--gr2);margin:5px 0 0}
+.cite a{color:var(--mint-t)}
+.verdict{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.verdict.v-call{color:var(--mint-t)}
+.verdict.v-escalate{color:var(--red-t)}
+.verdict.v-email{color:var(--blue-t)}
+.verdict.v-none{color:var(--gr3);font-weight:400}
+.why{font-size:12px;color:var(--gr);margin:4px 0 0;line-height:1.45}
+.outcome{font-size:13px}
+.nocall,.queued{font-size:13px;color:var(--gr3);white-space:nowrap}
+.calls{border-radius:0 0 12px 12px;box-shadow:inset 0 1px 0 var(--ln-s)}
+.calls tbody tr.callrow{cursor:pointer}
+.calls tbody tr.callrow:hover{background:var(--ln-s)}
+.calls .when{font-size:13px;color:var(--gr);font-variant-numeric:tabular-nums}
+.calls .said{font-size:13px;color:var(--ink2);line-height:1.5}
+.calls .res{font-size:14px;font-weight:500}
+.calls .res.good{color:var(--mint-t)}
+.calls .res.bad{color:var(--red-t)}
+.btn2.small{font-size:13px;padding:6px 11px}
+.sech{margin:30px 0 13px}
+.sech:first-child{margin-top:0}
+.sech h3{margin:0;font-size:16px;font-weight:500;letter-spacing:-.015em}
+.sech p{margin:3px 0 0;font-size:13px;color:var(--gr)}
+.dnc{border:1px solid var(--ln);border-radius:9px;max-height:186px;overflow:auto;background:#fff}
+.fld .dnc-item{display:flex;align-items:center;gap:11px;padding:9px 13px;border-bottom:1px solid var(--ln-s);cursor:pointer;font-size:14px}
+.fld .dnc-item:last-child{border-bottom:0}
+.fld .dnc-item:hover{background:var(--ln-s)}
+.fld .dnc-item input{width:16px;height:16px;accent-color:var(--red-t);flex-shrink:0;cursor:pointer;margin:0}
+.fld .dnc-item span{flex-grow:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fld .dnc-item em{font-style:normal;font-size:13px;color:var(--gr2);font-variant-numeric:tabular-nums;margin-left:auto;padding-left:14px;flex-shrink:0}
+.fld .dnc-item:has(input:checked){background:var(--red-b)}
+.fld .dnc-item:has(input:checked) span{color:var(--red-t)}
+/* Widths live in a colgroup, not on the header cells: table-layout:fixed reads
+   the first row, and the first row here is the gradient band with colspans. */
+.board{table-layout:fixed}
+.namecell{display:flex;align-items:center;gap:7px;min-width:0}
+.namecell strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.namecell .bd{flex-shrink:0}
+.outcome .res{font-weight:500}
+.outcome p{margin:3px 0 0;font-size:12px;color:var(--gr);line-height:1.45}
+.sched b{font-weight:500;color:var(--ink2)}
+.tabs{display:flex;gap:4px;padding:0 40px;border-bottom:1px solid var(--ln-s);background:#fff;flex-shrink:0}
+.tab{height:46px;padding:0 13px;border:0;background:none;font-family:inherit;font-size:15px;color:var(--gr);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--ink2)}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+.bellwrap{position:relative}
+.notifs{position:absolute;top:44px;right:0;width:380px;max-height:420px;overflow:auto;z-index:60;
+  background:#fff;border:1px solid var(--ln);border-radius:12px;box-shadow:0 12px 34px rgba(21,23,22,.13);display:none}
+.notifs.on{display:block}
+.notifs .nh{padding:13px 16px;border-bottom:1px solid var(--ln-s);font-size:13px;color:var(--gr)}
+.nrow{padding:13px 16px;border-bottom:1px solid var(--ln-s)}
+.nrow:last-child{border-bottom:0}
+.nrow.unread{background:var(--mint-l)}
+.nrow h5{margin:0;font-size:14px;font-weight:500}
+.nrow p{margin:4px 0 0;font-size:13px;color:var(--gr);line-height:1.5}
+.nrow time{font-size:12px;color:var(--gr3)}
+.topright{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.earn{display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:9px;font-size:14px;color:var(--ink);background:#fff;border:1px solid transparent;
+  background-image:linear-gradient(#fff,#fff),linear-gradient(97deg,var(--mint-d),#9BB8FF 45%,#E9A8FF);
+  background-origin:border-box;background-clip:padding-box,border-box}
+.iconbtn{width:36px;height:36px;border-radius:50%;border:0;background:none;color:var(--gr);display:flex;align-items:center;justify-content:center;position:relative}
+.iconbtn:hover{background:var(--ln-s)}
+.badge{position:absolute;top:3px;right:3px;min-width:17px;height:17px;border-radius:5px;background:var(--mint-d);color:var(--ink);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.prof{display:flex;align-items:center;gap:6px;border:0;background:none;padding:3px 4px 3px 3px;border-radius:22px}
+.prof:hover{background:var(--ln-s)}
+.av{width:34px;height:34px;border-radius:50%;background:var(--mint-l);color:var(--mint-t);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .hd{padding:26px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
 h1{margin:0;font-size:27px;font-weight:500;letter-spacing:-.027em}
 .sub{margin:5px 0 0;font-size:13px;color:var(--gr2)}
@@ -47,14 +176,15 @@ h1{margin:0;font-size:27px;font-weight:500;letter-spacing:-.027em}
 .btn:disabled{opacity:.5;cursor:default}
 .btn2{background:#fff;color:var(--ink2);border:1px solid var(--ln);border-radius:8px;padding:9px 15px;font-size:14px}
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:22px 28px}
-.tile{background:#fff;border:1px solid var(--ln-s);border-radius:10px;padding:15px 18px}
+.tiles:empty,.filters:empty{padding:0;display:none}
+.tile{background:#F7F9F9;border:1px solid var(--ln-s);border-radius:10px;padding:16px 18px}
 .tile .l{margin:0 0 7px;font-size:13px;color:var(--gr)}
 .tile .v{margin:0;font-size:25px;font-weight:500;letter-spacing:-.03em}
 .tile .m{margin:6px 0 0;font-size:12px}
 .filters{display:flex;align-items:center;gap:10px;padding:0 28px 18px;flex-wrap:wrap}
 .pill{background:#fff;color:var(--gr);border:1px solid var(--ln);border-radius:20px;padding:6px 14px;font-size:13px}
 .pill.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.wrap{padding:0 28px 28px;flex-grow:1}
+.wrap{padding:22px 28px 28px;flex-grow:1}
 table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--ln-s);border-radius:12px;overflow:hidden}
 th{font-size:12px;color:var(--gr2);font-weight:400;text-align:left;padding:11px 16px;border-bottom:1px solid var(--ln-s);white-space:nowrap}
 td{padding:14px 16px;border-bottom:1px solid var(--ln-s);font-size:14px;vertical-align:middle}
@@ -84,6 +214,54 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .drawer.on{display:flex}
 .dhd{padding:24px 30px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--ln-s)}
 .dbody{padding:22px 30px;display:grid;grid-template-columns:1.4fr 1fr;gap:26px}
+.dbody.one{grid-template-columns:1fr}
+
+/* call modal. A live call is the one thing on screen worth watching, so it
+   takes the middle rather than sliding in at the edge. */
+.cscrim{position:fixed;inset:0;background:rgba(21,23,22,.34);display:none;z-index:50}
+.cscrim.on{display:block}
+.cmodal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:51;display:none;
+  flex-direction:column;width:min(660px,92vw);max-height:86vh;background:#fff;
+  border:1px solid var(--ln);border-radius:16px;box-shadow:0 26px 64px rgba(21,23,22,.2);overflow:hidden}
+.cmodal.on{display:flex}
+.cmodal.wide{width:min(940px,94vw)}
+.chd{padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid var(--ln-s);flex-shrink:0}
+.ctitle{margin:0;font-size:20px;font-weight:500;letter-spacing:-.024em}
+.creason{margin:5px 0 0;font-size:13px;color:var(--gr);line-height:1.5;max-width:52ch}
+.cbody{padding:22px 24px 24px;overflow:auto}
+.orbwrap{display:flex;flex-direction:column;align-items:center;gap:13px;padding:8px 0 22px}
+/* The dial animation is a canvas point cloud, so the element carries no
+   colour of its own. See makeOrb() for the gradient and the motion. */
+.corb{width:132px;height:132px;flex-shrink:0;display:block}
+.cstate{margin:0;font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.cstate .t{color:var(--gr2);margin-left:7px}
+/* batch: every call on stage at once */
+.ctiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:14px}
+.ctile{border:1px solid var(--ln-s);background:#F7F9F9;border-radius:12px;padding:20px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:11px;text-align:center}
+.ctile .corb{width:74px;height:74px}
+.cname{margin:0;font-size:14px;font-weight:500;line-height:1.35}
+.cstat{margin:0;font-size:12px;color:var(--gr);line-height:1.45}
+.ctime{margin:0;font-size:12px;color:var(--gr3);font-variant-numeric:tabular-nums}
+/* review stage: who is about to be called, and why */
+/* the primary action stays reachable however long the brief runs */
+.cfoot{position:sticky;bottom:-24px;background:#fff;display:flex;align-items:center;gap:12px;
+  margin-top:18px;padding:16px 0 0;border-top:1px solid var(--ln-s)}
+.cnum{font-size:13px;color:var(--gr2);font-variant-numeric:tabular-nums}
+.qlist{border:1px solid var(--ln-s);border-radius:12px;overflow:hidden}
+.qitem{display:flex;gap:14px;padding:15px 18px;border-bottom:1px solid var(--ln-s)}
+.qitem:last-child{border-bottom:0}
+.qnum{width:22px;height:22px;border-radius:50%;background:var(--ln-s);color:var(--gr);
+  font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.qname{margin:0;font-size:14px;font-weight:500}
+.qamt{font-weight:400;color:var(--gr2);margin-left:8px}
+.qwhy{margin:3px 0 0;font-size:13px;color:var(--gr);line-height:1.5}
+
+/* minimized */
+.cdock{position:fixed;right:26px;bottom:26px;z-index:52;display:flex;align-items:center;gap:10px;
+  background:var(--ink);color:#fff;border:0;border-radius:999px;padding:12px 19px;
+  font:inherit;font-size:13px;cursor:pointer;box-shadow:0 12px 34px rgba(21,23,22,.28)}
+.cdock[hidden]{display:none}
 .kv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--ln-s);font-size:14px}
 .kv span:first-child{color:var(--gr)}
 .sgrow{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--ln-s)}
@@ -143,14 +321,14 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .tick{flex-shrink:0;margin-top:3px}
 
 /* call */
-.call{background:var(--ink);color:#F7F9F9;border-radius:12px;padding:22px 24px}
+.call{background:#F7F9F9;color:var(--ink);border:1px solid var(--ln-s);border-radius:12px;padding:22px 24px}
 .turn{display:flex;gap:13px;margin-bottom:16px}
 .tav{width:30px;height:30px;border-radius:8px;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tav.agent{background:var(--mint);color:var(--ink)}
-.tav.human{background:var(--ink2);color:var(--gr3)}
+.tav.human{background:var(--ln);color:var(--gr)}
 .who{margin:0 0 4px;font-size:12px;color:var(--gr2)}
 .say{margin:0;font-size:14px;line-height:1.55}
-.tool{background:#1C1F1E;border:1px solid var(--ink2);border-radius:8px;padding:9px 13px;font-size:12px;color:var(--gr3);margin-bottom:16px}
+.tool{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:9px 13px;font-size:12px;color:var(--gr);margin-bottom:16px}
 .live{display:flex;align-items:center;gap:8px;font-size:13px;color:#F0997B}
 .rec{width:8px;height:8px;border-radius:50%;background:#E24B4A;animation:p 1.6s ease-in-out infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
@@ -164,14 +342,22 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .bar i{display:block;height:100%;background:var(--mint-d);border-radius:3px}
 .fld{margin-bottom:18px}
 .fld label{display:block;font-size:13px;color:var(--gr);margin-bottom:6px}
-.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{width:100%;font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--ln);border-radius:8px;background:#fff;color:var(--ink)}
+.fld input[type=text],.fld input[type=number],.fld select,.fld textarea{width:100%;font-family:inherit;font-size:14px;padding:10px 13px;border:1px solid var(--ln);border-radius:9px;background:#fff;color:var(--ink);line-height:1.4}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:0;border-color:var(--mint-d);box-shadow:0 0 0 3px rgba(4,236,193,.16)}
+.fld select{appearance:none;padding-right:38px;cursor:pointer;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666E6A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center}
 .fld textarea{min-height:96px;line-height:1.5;resize:vertical}
 .fld .hint{font-size:12px;color:var(--gr2);margin-top:6px;line-height:1.5}
-.sw{display:flex;align-items:center;gap:11px;padding:9px 0}
-.sw input{width:17px;height:17px;accent-color:var(--mint-t)}
+.sw{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid var(--ln-s);border-radius:9px;margin-bottom:10px;cursor:pointer}
+.sw:hover{background:var(--ln-s)}
+.sw:has(input:checked){border-color:var(--mint-d);background:var(--mint-l)}
+.sw input{width:18px;height:18px;accent-color:var(--mint-t);margin:1px 0 0;flex-shrink:0;cursor:pointer}
+.sw > span{margin:0;font-size:14px;color:var(--ink2);cursor:pointer;line-height:1.45}
+.sw > span > span{display:block;font-size:12px;color:var(--gr);margin-top:4px}
 .cols2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .savebar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--ln-s);padding:14px 0;display:flex;align-items:center;gap:12px;margin-top:8px}
-.tx{background:var(--ink);color:#F7F9F9;border-radius:10px;padding:16px 18px;margin-top:12px}
+.tx{background:#F7F9F9;color:var(--ink);border:1px solid var(--ln-s);border-radius:10px;padding:16px 18px;margin-top:12px}
 .mic{display:flex;align-items:center;gap:10px;font-size:13px}
 .orb{width:38px;height:38px;border-radius:50%;background:var(--ln-s);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
 .orb.listening{background:var(--mint-l)}
@@ -184,8 +370,6 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .orb.speaking .wave i:nth-child(4){animation-delay:.36s}
 @keyframes w{0%,100%{height:5px}50%{height:17px}}
 .vstat{font-size:13px;color:var(--gr2)}
-.runbar{background:#fff;border:1px solid var(--ln-s);border-radius:10px;padding:13px 18px;margin:0 28px 18px;display:none;align-items:center;gap:14px}
-.runbar.on{display:flex}
 .spin{width:15px;height:15px;border:2px solid var(--ln);border-top-color:var(--mint-t);border-radius:50%;animation:s .8s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
 </style>
@@ -193,42 +377,79 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 <body>
 <div class="app">
   <aside class="sb">
-    <div class="logo">
-      <svg width="44" height="20" viewBox="0 0 63 29" fill="none" aria-label="Rho">
-        <path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/>
-        <path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/>
-        <path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/>
-      </svg>
-      <span class="rule"></span><span class="desk">Desk</span>
+    <div class="brand"><span class="lockup"><svg width="52" height="24" viewBox="0 0 63 29" fill="none" aria-label="Rho"><path d="M9.29356 15.3106H4.24093V27.4132H0V0.265083H9.47321C16.3275 0.265083 19.2323 1.93377 19.2323 7.80801C19.2323 12.0659 16.305 14.0016 13.4044 14.7609L20.0084 27.4132H15.2107L9.29356 15.3106ZM10.5006 14.3177C13.9275 14.3177 14.9918 11.5751 14.9918 7.78761C14.9918 4.00016 13.9275 1.25702 9.47321 1.25702H4.24093V14.3177H10.5006Z" fill="#151716"/><path d="M40.8743 15.4524V27.4114H36.6507V14.7636C36.6507 11.4142 36.1361 9.15872 32.4402 9.15872C28.7667 9.15872 26.218 12.6903 26.218 15.3194V27.4132H21.9953V0.265083H26.2161V12.4122C27.4507 9.79977 30.2222 7.71067 33.7992 7.71067C39.1068 7.71067 40.8743 10.7824 40.8743 15.4524Z" fill="#151716"/><path d="M52.3743 28.0765C47.0896 28.0765 42.5263 24.5153 42.5263 17.8938C42.5263 11.2724 47.0901 7.71066 52.3738 7.71066C57.6575 7.71066 62.2222 11.2719 62.2222 17.8938C62.2222 24.5157 57.6585 28.0765 52.3743 28.0765ZM52.3743 8.52599C47.6444 8.52599 47.0232 11.5431 47.0232 17.8938C47.0232 24.2446 47.6444 27.2612 52.3743 27.2612C57.1041 27.2612 57.7258 24.2441 57.7258 17.8938C57.7258 11.5435 57.1045 8.52599 52.3743 8.52599Z" fill="#151716"/></svg><span class="deskmark">DESK</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+
+    <button class="org">
+      <span class="oav" id="orgInitials">FT</span>
+      <span class="onm" id="orgName">FusionTech</span>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+
+    <div class="navscroll">
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg>Home</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M6 10v8M10 10v8M14 10v8M18 10v8M3 21h18M12 3l9 5H3z"/></svg>Banking</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>Cards</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></svg>Vendors</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M21 12h-9"/></svg>Reporting</button>
+
+    <p class="sec">Workflows</p>
+    <button class="nv on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><path d="M4 14h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM20 14h-2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1z"/></svg>Desk</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg>Invoicing</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Expenses</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Reimbursements</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 9l9 5 9-5"/></svg>Bill Pay</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h.01M8 16h2M12 16h2M16 16h.01"/></svg>Accounting</button>
+
+    <p class="sec">Administration</p>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Users</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>Integrations</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h8M17 7h3M4 17h3M12 17h8"/><circle cx="14.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/></svg>Settings</button>
+    <button class="nv off" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.5" width="18" height="4.5" rx="1"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 7.5V21"/><path d="M12 7.5S9.5 7.5 8.6 6.4A1.9 1.9 0 0 1 12 4.6a1.9 1.9 0 0 1 3.4 1.8C14.5 7.5 12 7.5 12 7.5z"/></svg>Partner Perks</button>
     </div>
-    <div class="org"><span class="dot" id="orgInitials">FT</span><span id="orgName">FusionTech</span></div>
-    <div class="sec">Desk</div>
-    <button class="nv on" data-view="today">Today</button>
-    <button class="nv" data-view="counterparties">Counterparties</button>
-    <button class="nv" data-view="changes">What changed</button>
-    <button class="nv" data-view="queue">Collect queue</button>
-    <button class="nv" data-view="signals">Signals</button>
-    <button class="nv" data-view="calls">Calls</button>
-    <div class="sec">Configure</div>
-    <button class="nv" data-view="settings">Agent settings</button>
-    <div class="svc" id="services"></div>
+
+    <div class="sbfoot">
+      <span id="lastRun" hidden>never run</span>
+      <button class="helpbtn"><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>Help</button>
+    </div>
   </aside>
 
   <main class="main">
     <div class="top">
-      <span style="font-size:13px;color:var(--gr)" id="lastRun">never run</span>
-      <span class="av">MS</span>
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5L16.5 16.5"/></svg>
+        <input type="search" placeholder="Search..." aria-label="Search">
+        <span class="kbd">&#8984; K</span>
+      </label>
+      <div class="topright">
+        <button class="earn"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.5" width="18" height="4.5" rx="1"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 7.5V21"/><path d="M12 7.5S9.5 7.5 8.6 6.4A1.9 1.9 0 0 1 12 4.6a1.9 1.9 0 0 1 3.4 1.8C14.5 7.5 12 7.5 12 7.5z"/></svg>Earn $500</button>
+        <button class="iconbtn" aria-label="Help">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.5 2.5 0 1 1 3.2 2.6c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/></svg>
+        </button>
+        <span class="bellwrap">
+          <button class="iconbtn" id="bellBtn" aria-label="Notifications">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15v-4a6 6 0 1 0-12 0v4l-2 2h16z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+            <span class="badge" id="bellCount" hidden>0</span>
+          </button>
+          <div class="notifs" id="notifs"></div>
+        </span>
+        <button class="prof"><span class="av">MS</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab on" data-view="collect">AR Collections</button>
+        <button class="tab" data-view="cut">Spend Recovery</button>
+        <button class="tab" data-view="calls">Calls</button>
+        <button class="tab" data-view="settings">Agent settings</button>
     </div>
 
     <div class="hd">
       <div><h1 id="title">Counterparties</h1><p class="sub" id="subtitle">Connect to the ledger and run the desk</p></div>
       <div style="display:flex;gap:10px">
-        <button class="btn2" id="pingBtn">Test Rho</button>
-        <button class="btn" id="runBtn">Run desk</button>
+        <button class="btn" id="runBtn" hidden></button>
       </div>
     </div>
 
-    <div class="runbar" id="runbar"><span class="spin"></span><span id="runtext">Starting</span></div>
     <div id="tiles" class="tiles"></div>
     <div id="filters" class="filters"></div>
     <div class="wrap" id="content"></div>
@@ -237,6 +458,9 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer"></aside>
+<div class="cscrim" id="cscrim"></div>
+<div class="cmodal" id="cmodal"></div>
+<button class="cdock" id="cdock" hidden></button>
 <div class="toast" id="toast"></div>
 
 <script src="/static/app.js"></script>

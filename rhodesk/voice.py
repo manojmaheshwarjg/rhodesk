@@ -20,6 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -508,33 +509,70 @@ def turns_from(data: dict) -> list[dict]:
     return turns
 
 
-def reconcile(max_calls: int = 10) -> int:
-    """Close out phone calls that nobody told us had ended.
+# A conversation that has reached any of these is over, however it ended:
+# answered and hung up, declined, or dropped into voicemail.
+TERMINAL_STATUSES = ("done", "failed", "ended", "completed")
 
-    A browser call posts its own transcript back when the page closes it, and
-    a webhook would do the same for a phone call. There is no webhook here, so
-    a phone call stays "live" forever and never reaches the call log. This
-    polls ElevenLabs for the conversation instead, which needs no public URL.
+# The page polls this app roughly once a second. ElevenLabs does not need to
+# hear from us that often, so each conversation is asked at most this often.
+SYNC_EVERY_SECONDS = 3.0
+_last_sync: dict[str, float] = {}
 
-    Returns how many calls were closed.
+
+def sync_call(call: dict, *, force: bool = False) -> dict | None:
+    """Bring one live phone call up to date from ElevenLabs.
+
+    There is no webhook here, so nothing else closes a phone call and nothing
+    else can show its transcript while it is still running. Returns the fields
+    that changed, or None when there was nothing to do.
     """
+    ref = call.get("provider_ref") or ""
+    if call.get("state") != "live" or not ref.startswith("conv_"):
+        return None                       # simulated, or never reached a carrier
+
+    now = time.monotonic()
+    if not force and now - _last_sync.get(ref, 0.0) < SYNC_EVERY_SECONDS:
+        return None
+    _last_sync[ref] = now
+
     client = VoiceClient()
     if not client.live:
-        return 0
+        return None
+    data = client.fetch_conversation(ref)
+    if not data:
+        return None
+
+    turns = turns_from(data)
+    if data.get("status") not in TERMINAL_STATUSES:
+        # Still talking. Show what has been said so far rather than nothing.
+        if turns and turns != (call.get("transcript") or []):
+            db.set_fields("calls", call["id"], transcript=json.dumps(turns))
+            return {"transcript": turns}
+        return None
+
+    cp = db.one("counterparties", call["counterparty_id"]) or {}
+    outcome = extract_outcome(turns, cp.get("display_name", "the counterparty"))
+    ended = _now()
+    db.set_fields("calls", call["id"], state="done", ended_at=ended,
+                  transcript=json.dumps(turns), outcome=json.dumps(outcome))
+    _last_sync.pop(ref, None)
+    return {"state": "done", "ended_at": ended, "transcript": turns, "outcome": outcome}
+
+
+def reconcile(max_calls: int = 10) -> int:
+    """Close out every phone call nobody told us had ended.
+
+    A sweep for the call log, in case a call was running while its modal was
+    closed. Returns how many calls it closed.
+    """
     closed = 0
     for call in db.query("calls", "state = ?", ("live",), "created_at DESC")[:max_calls]:
-        ref = call.get("provider_ref") or ""
-        if not ref.startswith("conv_"):
-            continue                      # simulated, or never reached a carrier
-        data = client.fetch_conversation(ref)
-        if not data or data.get("status") not in ("done", "failed", "ended"):
-            continue                      # still in progress, leave it alone
-        turns = turns_from(data)
-        cp = db.one("counterparties", call["counterparty_id"]) or {}
-        outcome = extract_outcome(turns, cp.get("display_name", "the counterparty"))
-        db.set_fields("calls", call["id"], state="done", ended_at=_now(),
-                      transcript=json.dumps(turns), outcome=json.dumps(outcome))
-        closed += 1
+        try:
+            changed = sync_call(call, force=True)
+        except Exception:  # noqa: BLE001 - one bad call must not stop the sweep
+            continue
+        if changed and changed.get("state") == "done":
+            closed += 1
     return closed
 
 

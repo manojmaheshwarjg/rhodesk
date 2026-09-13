@@ -235,6 +235,14 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .corb{width:132px;height:132px;flex-shrink:0;display:block}
 .cstate{margin:0;font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
 .cstate .t{color:var(--gr2);margin-left:7px}
+/* The caption under the orb. It crossfades when Rhonica's state changes, and
+   the dots run only while she is busy with something that takes a moment. */
+.cmcap{display:inline-block;transition:opacity .16s ease,transform .16s ease}
+.cmcap.swap{opacity:0;transform:translateY(3px)}
+.cmdots i{font-style:normal;animation:cmdot 1.2s infinite both}
+.cmdots i:nth-child(2){animation-delay:.2s}
+.cmdots i:nth-child(3){animation-delay:.4s}
+@keyframes cmdot{0%,80%,100%{opacity:.15}40%{opacity:1}}
 /* batch: every call on stage at once */
 .ctiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:14px}
 .ctile{border:1px solid var(--ln-s);background:#F7F9F9;border-radius:12px;padding:20px 14px;
@@ -256,6 +264,27 @@ tr.clickable:hover{background:var(--bg);cursor:pointer}
 .qname{margin:0;font-size:14px;font-weight:500}
 .qamt{font-weight:400;color:var(--gr2);margin-left:8px}
 .qwhy{margin:3px 0 0;font-size:13px;color:var(--gr);line-height:1.5}
+
+/* Timeline: every real call to a counterparty, newest first, on a quiet rail.
+   Each item draws the rail down to the next dot, so it ends at the last one. */
+.tlink{display:block;margin:6px 0 0;padding:0;border:0;background:none;font:inherit;font-size:12px;
+  color:var(--mint-t);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.tlist{list-style:none;margin:0;padding:2px 0 0 24px}
+.tlitem{position:relative;padding:0 0 22px}
+.tlitem:last-child{padding-bottom:4px}
+.tlitem:not(:last-child)::before{content:"";position:absolute;left:-19px;top:14px;bottom:-3px;width:1px;background:var(--ln)}
+.tldot{position:absolute;left:-24px;top:3px;width:11px;height:11px;border-radius:50%;
+  background:var(--gr3);box-shadow:0 0 0 3px #fff}
+.tldot.good{background:var(--mint-d)}
+.tldot.bad{background:var(--red-t)}
+.tldot.live{background:var(--mint);animation:p 1.6s ease-in-out infinite}
+.tlwhen{margin:0;display:flex;gap:12px;font-size:12px;color:var(--gr2);font-variant-numeric:tabular-nums}
+.tlago{margin-left:auto;color:var(--gr3)}
+.tlres{margin:4px 0 0;font-size:15px;font-weight:500}
+.tlsum{margin:3px 0 0;font-size:14px;color:var(--ink2);line-height:1.5}
+.tlkv{margin:6px 0 0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--gr)}
+.tlkv b{font-weight:500;color:var(--ink2)}
+.tlnote{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--ln-s);font-size:12px;color:var(--gr2)}
 
 /* minimized */
 .cdock{position:fixed;right:26px;bottom:26px;z-index:52;display:flex;align-items:center;gap:10px;

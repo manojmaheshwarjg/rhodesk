@@ -20,13 +20,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import threading
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
-from . import config, db
+from . import call_history, config, db
 
 
 ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
@@ -167,6 +168,8 @@ class VoiceClient:
             "may_agree": "; ".join(brief.get("may_agree", [])),
             "must_not": "; ".join(brief.get("must_not", [])),
             "context": " ".join(brief.get("context", [])),
+            # The current time, the earlier calls, and the line she opens with.
+            **call_history.agent_context(cp),
         }
 
     def start_call(self, cp: dict, brief: dict, to_number: str) -> dict:
@@ -241,13 +244,16 @@ class VoiceClient:
         if not self.live or not conversation_id:
             return None
         try:
-            with httpx.Client(timeout=45.0) as client:
-                resp = client.get(
-                    f"{config.ELEVENLABS_BASE_URL}/v1/convai/conversations/{conversation_id}",
-                    headers={"xi-api-key": config.ELEVENLABS_API_KEY},
-                )
-                resp.raise_for_status()
-                return resp.json()
+            resp = _http_client().get(
+                f"{config.ELEVENLABS_BASE_URL}/v1/convai/conversations/{conversation_id}",
+                headers={"xi-api-key": config.ELEVENLABS_API_KEY},
+            )
+            if resp.status_code == 429:
+                _back_off(conversation_id)
+                return None
+            resp.raise_for_status()
+            _wait.pop(conversation_id, None)
+            return resp.json()
         except Exception:  # noqa: BLE001
             return None
 
@@ -509,28 +515,111 @@ def turns_from(data: dict) -> list[dict]:
     return turns
 
 
-# A conversation that has reached any of these is over, however it ended:
-# answered and hung up, declined, or dropped into voicemail.
-TERMINAL_STATUSES = ("done", "failed", "ended", "completed")
+# ElevenLabs lists "processing" between "in-progress" and "done". Waiting for
+# "done" meant waiting on its post-call analysis, which Rho Desk never reads:
+# on real calls the screen said "On the call" for 14 to 20 seconds after the
+# hangup. Any of these means nobody is on the line any more.
+ENDED_STATUSES = ("processing", "done", "failed", "ended", "completed")
 
-# The page polls this app roughly once a second. ElevenLabs does not need to
-# hear from us that often, so each conversation is asked at most this often.
-SYNC_EVERY_SECONDS = 3.0
+# ElevenLabs attaches the transcript late. On a real two-minute call it was
+# empty all through the call and still empty at "processing", so summarising
+# then recorded "No conversation recorded" for a 21-turn conversation. An
+# empty transcript is only believed once ElevenLabs has finished.
+FINAL_STATUSES = ("done", "failed", "ended", "completed")
+
+
+def _ready_to_write(status: str, turns: list) -> bool:
+    return bool(turns) or status in FINAL_STATUSES
+
+# How often one conversation is asked about. The page polls once a second, and
+# a request takes about 80 ms over a kept-alive connection.
+SYNC_EVERY_SECONDS = 1.0
 _last_sync: dict[str, float] = {}
+
+# One kept-alive connection per worker thread. A fresh client per request paid
+# a TLS handshake on every poll, about 120 ms a request instead of 80.
+_http = threading.local()
+
+
+def _http_client() -> httpx.Client:
+    client = getattr(_http, "client", None)
+    if client is None:
+        client = _http.client = httpx.Client(timeout=45.0)
+    return client
+
+
+# If ElevenLabs ever answers "too many requests", that conversation waits
+# before asking again, doubling up to half a minute. It never did at twice
+# this rate across three calls, but a demo is not the place to find out.
+_wait: dict[str, float] = {}
+_blocked_until: dict[str, float] = {}
+
+
+def _back_off(ref: str) -> None:
+    _wait[ref] = min(30.0, _wait.get(ref, 1.0) * 2)
+    _blocked_until[ref] = time.monotonic() + _wait[ref]
+
+
+# Calls whose summary is being written right now, so a poll that lands while
+# one is running does not start a second.
+_writing: set[str] = set()
+_writing_lock = threading.Lock()
+
+
+def _start_write_up(call: dict, turns: list) -> None:
+    """Record what was agreed, off the request that noticed the call end.
+
+    The screen already says Rhonica is writing the summary; this is what makes
+    it true. If the transcript grows while it runs, it leaves the call in
+    "wrapping" and the next poll starts it again on the longer one.
+    """
+    call_id = call["id"]
+    with _writing_lock:
+        if call_id in _writing:
+            return
+        _writing.add(call_id)
+
+    def run() -> None:
+        try:
+            cp = db.one("counterparties", call["counterparty_id"]) or {}
+            outcome = extract_outcome(turns, cp.get("display_name", "the counterparty"))
+            current = db.one("calls", call_id) or {}
+            if len(current.get("transcript") or []) > len(turns):
+                return                    # a longer transcript arrived; rerun on that
+            db.set_fields("calls", call_id, state="done", outcome=json.dumps(outcome))
+        except Exception:  # noqa: BLE001 - left in "wrapping", the next poll retries
+            pass
+        finally:
+            with _writing_lock:
+                _writing.discard(call_id)
+
+    threading.Thread(target=run, name=f"write-up-{call_id[:8]}", daemon=True).start()
 
 
 def sync_call(call: dict, *, force: bool = False) -> dict | None:
-    """Bring one live phone call up to date from ElevenLabs.
+    """Bring one phone call up to date from ElevenLabs.
 
     There is no webhook here, so nothing else closes a phone call and nothing
-    else can show its transcript while it is still running. Returns the fields
-    that changed, or None when there was nothing to do.
+    else can show its transcript while it runs. Returns the fields that
+    changed, or None when there was nothing to do.
     """
     ref = call.get("provider_ref") or ""
-    if call.get("state") != "live" or not ref.startswith("conv_"):
+    if not ref.startswith("conv_"):
         return None                       # simulated, or never reached a carrier
 
+    state = call.get("state")
+    if state == "done" and call.get("provider_status") != "processing":
+        return None                       # finished, and ElevenLabs has finished too
+
+    # Wrapping with nothing writing it means a restart or a failed attempt,
+    # unless it is still waiting for ElevenLabs to attach the transcript.
+    if (state == "wrapping" and call["id"] not in _writing
+            and _ready_to_write(call.get("provider_status") or "", call.get("transcript") or [])):
+        _start_write_up(call, call.get("transcript") or [])
+
     now = time.monotonic()
+    if now < _blocked_until.get(ref, 0.0):
+        return None
     if not force and now - _last_sync.get(ref, 0.0) < SYNC_EVERY_SECONDS:
         return None
     _last_sync[ref] = now
@@ -542,38 +631,64 @@ def sync_call(call: dict, *, force: bool = False) -> dict | None:
     if not data:
         return None
 
+    status = data.get("status") or ""
+    meta = data.get("metadata") or {}
     turns = turns_from(data)
-    if data.get("status") not in TERMINAL_STATUSES:
-        # Still talking. Show what has been said so far rather than nothing.
-        if turns and turns != (call.get("transcript") or []):
-            db.set_fields("calls", call["id"], transcript=json.dumps(turns))
-            return {"transcript": turns}
-        return None
+    stored = call.get("transcript") or []
+    changed: dict = {}
 
-    cp = db.one("counterparties", call["counterparty_id"]) or {}
-    outcome = extract_outcome(turns, cp.get("display_name", "the counterparty"))
-    ended = _now()
-    db.set_fields("calls", call["id"], state="done", ended_at=ended,
-                  transcript=json.dumps(turns), outcome=json.dumps(outcome))
-    _last_sync.pop(ref, None)
-    return {"state": "done", "ended_at": ended, "transcript": turns, "outcome": outcome}
+    if status and status != call.get("provider_status"):
+        changed["provider_status"] = status
+    # The carrier stamps this the moment the person picks up, the only honest
+    # way to tell ringing from connected before anyone has spoken.
+    if not call.get("connected_at") and (meta.get("accepted_time_unix_secs") or turns):
+        changed["connected_at"] = _now()
+
+    if status not in ENDED_STATUSES:
+        if turns and turns != stored:
+            changed["transcript"] = turns    # still talking: show it as it happens
+    elif state == "live":
+        changed.update(state="wrapping", ended_at=_now(), transcript=turns)
+    elif len(turns) > len(stored):
+        # The transcript arrived, or grew, after the call ended. This is the
+        # usual case: ElevenLabs attaches it while it finishes processing.
+        changed.update(state="wrapping", transcript=turns)
+
+    if changed:
+        db.set_fields("calls", call["id"],
+                      **{k: (json.dumps(v) if k == "transcript" else v) for k, v in changed.items()})
+    now_state = changed.get("state", state)
+    now_turns = changed.get("transcript", stored)
+    if now_state == "wrapping" and _ready_to_write(status, now_turns):
+        _start_write_up(call, now_turns)
+    return changed or None
 
 
-def reconcile(max_calls: int = 10) -> int:
-    """Close out every phone call nobody told us had ended.
+def reconcile(max_calls: int = 10, *, force: bool = True) -> int:
+    """Sweep for phone calls whose modal was closed before they finished.
 
-    A sweep for the call log, in case a call was running while its modal was
-    closed. Returns how many calls it closed.
+    Picks up calls still live or mid write-up, and recently finished ones
+    whose conversation ElevenLabs was still processing. Returns how many it
+    found had ended. Paths that run often pass force=False, so a call the
+    modal is already polling is not asked about twice in the same second.
     """
-    closed = 0
-    for call in db.query("calls", "state = ?", ("live",), "created_at DESC")[:max_calls]:
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=30)
+    candidates = db.query(
+        "calls",
+        "state IN ('live', 'wrapping') OR (state = 'done' AND provider_status = 'processing')",
+        (), "created_at DESC")
+    ended = 0
+    for call in candidates[:max_calls]:
+        if (call["state"] == "done" and call.get("ended_at")
+                and datetime.fromisoformat(call["ended_at"]) < cutoff):
+            continue
         try:
-            changed = sync_call(call, force=True)
+            changed = sync_call(call, force=force)
         except Exception:  # noqa: BLE001 - one bad call must not stop the sweep
             continue
-        if changed and changed.get("state") == "done":
-            closed += 1
-    return closed
+        if changed and changed.get("state") == "wrapping":
+            ended += 1
+    return ended
 
 
 def ingest_webhook(body: dict) -> str | None:

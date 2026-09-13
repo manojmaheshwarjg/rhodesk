@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -10,7 +11,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import config, db, history, pipeline, scheduler, settings as desk_settings, today as today_module, voice
+from . import call_history, config, db, history, pipeline, scheduler, settings as desk_settings, today as today_module, voice
 from .llm import LLMClient
 from . import rho as rho_module
 from .rho import RhoError
@@ -187,6 +188,7 @@ async def start_call(request: Request) -> dict:
     row = db.one("counterparties", cp_id or "")
     if not row:
         raise HTTPException(404, "unknown counterparty")
+    _finish_open_calls(cp_id)                  # her context is built from earlier calls
 
     brief_doc = body.get("brief")
     if not brief_doc:
@@ -246,6 +248,32 @@ def _advance_sim(row: dict) -> dict:
     return row
 
 
+def _finish_open_calls(cp_id: str | None = None) -> None:
+    """Finish any call nobody is watching before its result is read.
+
+    The call modal finishes a call while it is open, and the Calls tab sweeps
+    up the rest. The board, the Timeline and Rhonica's next call read the same
+    rows, so without this a page closed mid-call left them saying "On a call
+    now", and her next call did not know the last one had happened. When
+    nothing is open, which is almost always, this is one query.
+    """
+    where = ("(state IN ('live', 'wrapping') OR provider_status = 'processing') "
+             "AND COALESCE(to_number, '') != 'browser'")
+    params: tuple = ()
+    if cp_id:
+        where, params = f"counterparty_id = ? AND {where}", (cp_id,)
+    open_calls = db.query("calls", where, params)
+    if not open_calls:
+        return
+    if any((c.get("provider_ref") or "").startswith("conv_") for c in open_calls):
+        try:
+            voice.reconcile(force=False)       # real phone calls: ask ElevenLabs
+        except Exception:  # noqa: BLE001 - reading the board must not fail on this
+            pass
+    for row in open_calls:
+        _advance_sim(row)                      # scripted calls whose script has run out
+
+
 @app.get("/api/calls/{call_id}")
 def call_state(call_id: str) -> dict:
     row = db.one("calls", call_id)
@@ -255,7 +283,7 @@ def call_state(call_id: str) -> dict:
     # A real phone call has no webhook to close it, so the poll that draws the
     # call modal is what keeps it honest: it streams the transcript while the
     # call runs and writes the outcome the moment it ends.
-    if row["state"] == "live":
+    if row["state"] in ("live", "wrapping") or row.get("provider_status") == "processing":
         try:
             changed = voice.sync_call(row)
         except Exception:  # noqa: BLE001 - the modal must still render
@@ -292,7 +320,7 @@ def calls() -> list[dict]:
     except Exception:  # noqa: BLE001 - the log must render regardless
         pass
     rows = [c for c in db.query("calls", order="created_at DESC")
-            if not is_rehearsal(c)]
+            if not call_history.is_rehearsal(c)]
     names = {c["id"]: c["display_name"] for c in db.query("counterparties")}
     for r in rows:
         _advance_sim(r)
@@ -301,6 +329,11 @@ def calls() -> list[dict]:
 
 
 # --- agent-facing endpoints ------------------------------------------------
+
+def _ref_key(ref: str | None) -> str:
+    """An invoice reference reduced to its letters and digits, uppercased."""
+    return re.sub(r"[^A-Z0-9]", "", (ref or "").upper())
+
 
 @app.post("/api/tools/invoice")
 async def tool_invoice(request: Request) -> dict:
@@ -326,8 +359,11 @@ async def tool_invoice(request: Request) -> dict:
 
     invoices = cp.get("invoices") or []
     if number:
-        match = next((i for i in invoices
-                      if (i.get("number") or "").upper() == number.upper()), None)
+        # Compared on letters and digits only. The agent is told to pass the
+        # reference exactly, but "r204", "R-204" and "R 204" are the same
+        # invoice, and a missed match sounds to the caller like a wrong number.
+        want = _ref_key(number)
+        match = next((i for i in invoices if _ref_key(i.get("number")) == want), None)
         if not match:
             return {"found": False, "counterparty": cp["display_name"],
                     "message": f"No invoice {number} on this account."}
@@ -384,6 +420,7 @@ async def voice_session(request: Request) -> dict:
     row = db.one("counterparties", cp_id or "")
     if not row:
         raise HTTPException(404, "unknown counterparty")
+    _finish_open_calls(cp_id)                  # her context is built from earlier calls
 
     cfg = desk_settings.get()
     if cp_id in (cfg.get("do_not_call") or []):
@@ -440,7 +477,7 @@ async def finish_call(call_id: str, request: Request) -> dict:
         raise HTTPException(404, "unknown call")
     body = await request.json()
     turns = body.get("transcript") or row.get("transcript") or []
-    if is_rehearsal(row):
+    if call_history.is_rehearsal(row):
         # Keep what was said, draw no conclusions from it.
         db.set_fields("calls", call_id, state="done", ended_at=_now(),
                       transcript=json.dumps(turns), outcome=json.dumps({}))
@@ -500,7 +537,7 @@ def queue() -> dict:
     calls = db.query("calls", order="created_at DESC")
     last_call = {}
     for c in calls:
-        if not is_rehearsal(c):
+        if not call_history.is_rehearsal(c):
             last_call.setdefault(c["counterparty_id"], c)
 
     items = []
@@ -569,6 +606,7 @@ def _place_call(row: dict, *, live: bool, approved_by: str) -> str:
     """Create one call row. `live` decides whether this one goes out over the
     carrier; the rest of the batch runs the scripted path. Either way the call
     lands in the same table with the same shape, so the board reads one way."""
+    _finish_open_calls(row["id"])              # her context is built from earlier calls
     cfg = desk_settings.get()
     sigs = db.query("signals", "counterparty_id = ?", (row["id"],))
     brief_doc = pipeline.build_brief(row, sigs, LLMClient())
@@ -660,17 +698,9 @@ def draft_email(cp_id: str) -> dict:
 CALLABLE_VERDICTS = {"call", "escalate"}
 
 
-def is_rehearsal(call: dict) -> bool:
-    """A browser session is the operator talking to the agent themselves, to
-    hear how it sounds before it dials anyone. Nobody was contacted, so it
-    never becomes an outcome on the board, a row in the call log, or a figure
-    in the stats. Only calls that reached a number count."""
-    return (call.get("to_number") or "") == "browser"
-
-
 def _last_call(cp_id: str, calls: list[dict]) -> dict | None:
     for c in calls:
-        if c["counterparty_id"] == cp_id and not is_rehearsal(c):
+        if c["counterparty_id"] == cp_id and not call_history.is_rehearsal(c):
             outcome = c.get("outcome") or {}
             return {
                 "state": c["state"],
@@ -699,6 +729,7 @@ def board() -> dict:
     """Everything on one screen. Collect carries the receivables, with the ones
     showing distress flagged rather than split into their own tab. Cut carries
     recurring spend worth renegotiating."""
+    _finish_open_calls()
     where, params = _current_scope()
     rows = db.query("counterparties", where, params)
     calls = db.query("calls", order="created_at DESC")
@@ -823,11 +854,24 @@ def timeline(cp_id: str) -> dict:
                 "ORDER BY run_id DESC", (cp_id,))}
 
 
+@app.get("/api/counterparties/{cp_id}/calls")
+def counterparty_calls(cp_id: str) -> dict:
+    """The Timeline modal: every real call to this counterparty, newest first,
+    and the context Rhonica is given from it before her next call."""
+    row = db.one("counterparties", cp_id)
+    if not row:
+        raise HTTPException(404, "unknown counterparty")
+    _finish_open_calls(cp_id)
+    return {"counterparty_id": cp_id, "display_name": row["display_name"],
+            "calls": call_history.for_counterparty(cp_id),
+            "agent_context": call_history.agent_context(row)}
+
+
 # --- calls log -------------------------------------------------------------
 
 @app.get("/api/call-stats")
 def call_stats() -> dict:
-    rows = [c for c in db.query("calls") if not is_rehearsal(c)]
+    rows = [c for c in db.query("calls") if not call_history.is_rehearsal(c)]
     done = [c for c in rows if c["state"] == "done"]
     answered = [c for c in done if (c.get("outcome") or {}).get("answered")]
     SECURES = {"commitment", "partial", "agreed", "cancelled"}

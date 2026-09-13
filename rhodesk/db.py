@@ -196,6 +196,14 @@ def cursor():
 # them is migrated in place rather than thrown away, because the history it
 # holds is the point.
 _ADDED_COLUMNS = {
+    "calls": {
+        # Stamped when the carrier says the person picked up. Without it a
+        # ringing call and a connected one look identical until somebody speaks.
+        "connected_at": "TEXT",
+        # ElevenLabs' own status for the conversation. "processing" means the
+        # call is over but its post-call analysis is still running.
+        "provider_status": "TEXT",
+    },
     "counterparties": {
         "note": "TEXT",
         "note_source": "TEXT",

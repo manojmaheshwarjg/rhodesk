@@ -146,14 +146,14 @@ Everything else is arithmetic and rules. Deliberately.
 
 ### ElevenLabs
 
-The agent, Ellis, receives 15 dynamic variables per call: the amount and
+The agent, Rhonica, receives 15 dynamic variables per call: the amount and
 invoice in spoken form, what it may agree to, what it must not, and the
 research context.
 
 Spoken forms are computed in Python, not left to the model. `$59,200.00`
-becomes "fifty nine thousand two hundred dollars". `INV-2026-0001` becomes
-"twenty twenty six, zero zero zero one", with the `INV` dropped because the
-sentence already says the word invoice.
+becomes "fifty nine thousand two hundred dollars". Invoice references are one
+letter and three digits, so `R204` becomes "R two zero four": no year, and no
+dash for the voice to read out.
 
 `get_invoice_details` is registered as a **client** tool, so it runs in the
 page and needs no public URL. It also means `counterparty_id` comes from the
@@ -211,7 +211,7 @@ so the desk stays reachable only from inside your own network.
           │                 ┌───────────────┐
           └────────────────►│ 6. ACT        │
             brief + guard   │ ElevenLabs    │──► browser (WebRTC)
-            rails + dossier │ agent "Ellis" │──► phone (Telnyx SIP → PSTN)
+            rails + dossier │ agent Rhonica │──► phone (Telnyx SIP → PSTN)
                             └───────┬───────┘
                                     │ get_invoice_details (client tool)
                                     ▼

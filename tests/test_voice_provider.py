@@ -57,3 +57,9 @@ def test_a_bare_reference_is_left_alone():
 
 def test_empty_reference_is_empty():
     assert voice.say_reference("") == ""
+
+
+def test_the_house_invoice_format_reads_cleanly():
+    """One letter and three digits, no separator. Nothing in it for the voice
+    to say that a person would not: no dash, no year, no I-N-V."""
+    assert voice.say_reference("R204") == "R two zero four"

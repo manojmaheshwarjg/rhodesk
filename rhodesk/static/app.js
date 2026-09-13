@@ -99,7 +99,7 @@ function setRunButton(tab, ready) {
 // A live call is the product's headline moment, so it gets the middle of the
 // screen rather than a progress strip. The shell is built once and then
 // patched, so the orb keeps its animation instead of restarting every tick.
-const CALL = { timer: null, mode: null, ids: [], cp: null, turns: -1, orbs: [] };
+const CALL = { timer: null, mode: null, ids: [], cp: null, turns: -1, orbs: [], gen: 0 };
 
 const callSecs = (call) => {
   if (!call.created_at) return 0;
@@ -112,12 +112,16 @@ const MMSS = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 // last thing said is the only honest signal.
 function speakerOf(call) {
   if (call.state === "done") return "done";
+  if (call.state === "wrapping") return "wrapping";
   const t = (call.transcript || []).filter((x) => x.role !== "tool");
-  return t.length ? t[t.length - 1].role : "dialing";
+  if (t.length) return t[t.length - 1].role;
+  // Answered but nobody transcribed yet. Ringing and connected look identical
+  // without this, which is why a live call sat on "Dialing" for two minutes.
+  return call.connected_at ? "connected" : "dialing";
 }
 
 // The dial animation: a rotating point cloud, drawn in the same mint to
-// periwinkle to orchid gradient the "Researched by Rho Desk" band already
+// periwinkle to orchid gradient the "Researched by Rhonica" band already
 // uses, so the agent reads as part of this product and not a borrowed widget.
 const ORB_STOPS = [[10, 205, 172], [124, 152, 246], [196, 132, 240]];
 const ORB_GRAY = [152, 160, 156];
@@ -130,10 +134,13 @@ function gradAt(t) {
 }
 
 // How alive the sphere looks per state: how hard it breathes, how fast it
-// turns, and how far its colour sits from grey.
-const ORB_GAIN = { dialing: 0.22, agent: 1, human: 0.5, done: 0 };
-const ORB_SPIN = { dialing: 0.0024, agent: 0.0060, human: 0.0034, done: 0.0011 };
-const ORB_LIT  = { dialing: 0.45, agent: 1, human: 0.34, done: 0.8 };
+// turns, how far its colour sits from grey, and how slow each breath is.
+// Listening stays lit, so she reads as attentive rather than switched off.
+// Resting breathes slowly, the way something asleep does.
+const ORB_GAIN = { dialing: 0.22, connected: 0.6, agent: 1, human: 0.35, wrapping: 0.3, done: 0.18 };
+const ORB_SPIN = { dialing: 0.0024, connected: 0.0042, agent: 0.0060, human: 0.0030, wrapping: 0.0090, done: 0.0008 };
+const ORB_LIT  = { dialing: 0.45, connected: 0.85, agent: 1, human: 0.62, wrapping: 0.6, done: 0.7 };
+const ORB_PACE = { dialing: 300, connected: 340, agent: 260, human: 420, wrapping: 220, done: 950 };
 
 function makeOrb(canvas, size) {
   const ctx = canvas.getContext("2d");
@@ -151,11 +158,19 @@ function makeOrb(canvas, size) {
     pts.push([Math.cos(golden * i) * r, y, Math.sin(golden * i) * r]);
   }
 
-  const orb = { mode: "dialing", rot: 0, lit: 0.45, raf: 0 };
+  const orb = { mode: "dialing", rot: 0, lit: 0.45, gain: 0.22, spin: 0.0024, phase: 0, last: 0, raf: 0 };
   const frame = (ms) => {
-    orb.rot += ORB_SPIN[orb.mode];
-    orb.lit += (ORB_LIT[orb.mode] - orb.lit) * 0.05;
-    const breathe = (Math.sin(ms / 300) * 0.5 + 0.5) * ORB_GAIN[orb.mode];
+    // Every quality eases toward its target, so a change of state glides
+    // instead of snapping, and the breath keeps its place when its pace changes.
+    const m = orb.mode;
+    const dt = orb.last ? Math.min(ms - orb.last, 64) : 16;
+    orb.last = ms;
+    orb.spin += (ORB_SPIN[m] - orb.spin) * 0.05;
+    orb.gain += (ORB_GAIN[m] - orb.gain) * 0.05;
+    orb.lit += (ORB_LIT[m] - orb.lit) * 0.05;
+    orb.rot += orb.spin;
+    orb.phase += dt / ORB_PACE[m];
+    const breathe = (Math.sin(orb.phase) * 0.5 + 0.5) * orb.gain;
     const R = canvas.width * 0.37 * (1 + breathe * 0.09);
     const cx = canvas.width / 2, cy = canvas.height / 2;
     const cos = Math.cos(orb.rot), sin = Math.sin(orb.rot);
@@ -186,12 +201,36 @@ function stopOrbs() {
   CALL.orbs = [];
 }
 
-function statusOf(call, name) {
-  const s = speakerOf(call);
-  if (s === "done") return (RESULT[(call.outcome || {}).result] || { label: "Call complete" }).label;
-  if (s === "agent") return "Ellis speaking";
-  if (s === "human") return `${name} speaking`;
-  return "Dialing\u2026";
+// What Rhonica is doing, in her own words, under the orb. "busy" marks the
+// states that take a moment, which get animated dots.
+function captionOf(call) {
+  switch (speakerOf(call)) {
+    case "agent": return { text: "Rhonica is talking" };
+    case "human": return { text: "Rhonica is listening" };
+    case "connected": return { text: "Rhonica is on the line" };
+    case "wrapping": return { text: "Rhonica is writing the summary", busy: true };
+    case "done": return { text: "Rhonica is resting" };
+    default: return { text: "Rhonica is dialing", busy: true };
+  }
+}
+
+// A batch tile has no outcome banner, so a finished tile shows the result.
+function statusOf(call) {
+  if (call.state === "done") return (RESULT[(call.outcome || {}).result] || { label: "Call complete" }).label;
+  const { text, busy } = captionOf(call);
+  return busy ? `${text}\u2026` : text;
+}
+
+// Crossfades the caption only when it actually changes, since the poll
+// rewrites it every second.
+function setCaption(el, call) {
+  const { text, busy } = captionOf(call);
+  const key = busy ? `${text}\u2026` : text;
+  if (el.dataset.key === key) return;
+  el.dataset.key = key;
+  const html = esc(text) + (busy ? '<span class="cmdots"><i>.</i><i>.</i><i>.</i></span>' : "");
+  el.classList.add("swap");
+  setTimeout(() => { el.innerHTML = html; el.classList.remove("swap"); }, 160);
 }
 
 function paintOrb(el, call) {
@@ -297,7 +336,7 @@ async function reviewBatch(tab) {
     <div class="chd">
       <div>
         <h2 class="ctitle">Call ${rows.length} ${rows.length === 1 ? noun.slice(0, -1) : noun}?</h2>
-        <p class="creason">Nothing rings until you confirm. Ellis works them in this order.</p>
+        <p class="creason">Nothing rings until you confirm. Rhonica works them in this order.</p>
       </div>
       <button class="btn2" id="cmCancel" style="flex-shrink:0">Cancel</button>
     </div>
@@ -334,6 +373,63 @@ async function dialBatch(tab) {
   watchCalls(started.calls.map((c) => c.call_id), "batch");
 }
 
+// --- timeline --------------------------------------------------------------
+// Every real call to one counterparty, newest first. The same history is what
+// Rhonica is given before her next call, so the note under it is literal.
+
+async function openTimeline(cpId) {
+  // The modal is shared, so opening this over a watched call would tear it down.
+  if (CALL.timer) { toast("Rhonica is on a call. The timeline opens once it ends."); return; }
+  openModal(false);
+  $("cmodal").innerHTML = `
+    <div class="chd"><div><h2 class="ctitle">Timeline</h2>
+      <p class="creason">Reading the call history\u2026</p></div></div>
+    <div class="cbody"><p class="empty">One moment.</p></div>`;
+
+  let d;
+  try { d = await api(`/api/counterparties/${cpId}/calls`); }
+  catch (e) { toast("Could not load the timeline: " + e.message); closeCallModal(); return; }
+
+  const calls = d.calls || [];
+  $("cmodal").innerHTML = `
+    <div class="chd">
+      <div>
+        <h2 class="ctitle">${esc(d.display_name)}</h2>
+        <p class="creason">${calls.length
+          ? `${calls.length} call${calls.length === 1 ? "" : "s"} \u00b7 the last one ${esc(AGO(calls[0].at))}`
+          : "No calls yet"}</p>
+      </div>
+      <button class="btn2" id="cmCancel" style="flex-shrink:0">Close</button>
+    </div>
+    <div class="cbody">
+      ${calls.length
+        ? `<ol class="tlist">${calls.map(timelineItem).join("")}</ol>`
+        : '<p class="empty">Rhonica has not called them yet.</p>'}
+      <p class="tlnote">Rhonica reads this history before every call, so a follow-up picks up where the last one left off.</p>
+    </div>`;
+  $("cmCancel").onclick = closeCallModal;
+}
+
+function timelineItem(c) {
+  const res = RESULT[c.result];
+  const label = c.state === "wrapping" ? "Writing the summary\u2026"
+    : c.state !== "done" ? "On a call now"
+    : res ? res.label : (c.result ? humanKey(c.result) : "Completed");
+  const tone = c.state !== "done" ? "live" : (res && res.tone) || "plain";
+  const when = new Date(c.at).toLocaleString(undefined,
+    { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+  const took = c.state === "done" && c.duration_secs != null ? ` \u00b7 ${MMSS(c.duration_secs)}` : "";
+  const agreed = (c.commitments || []).filter((x) => x && x.label);
+  return `<li class="tlitem">
+    <span class="tldot ${esc(tone)}"></span>
+    <p class="tlwhen"><span>${esc(when)}${took}</span><span class="tlago">${esc(AGO(c.at))}</span></p>
+    <p class="tlres">${esc(label)}</p>
+    ${c.summary ? `<p class="tlsum">${esc(c.summary)}</p>` : ""}
+    ${agreed.length ? `<p class="tlkv">${agreed.map((x) =>
+      `<span>${esc(humanKey(x.label))}: <b>${esc(String(x.value))}</b></span>`).join("")}</p>` : ""}
+  </li>`;
+}
+
 // --- shells ---------------------------------------------------------------
 
 function singleShell(cp) {
@@ -349,7 +445,7 @@ function singleShell(cp) {
     <div class="cbody">
       <div class="orbwrap">
         <canvas class="corb" id="cmOrb"></canvas>
-        <p class="cstate"><span id="cmStatus">Dialing\u2026</span><span class="t" id="cmTime">0:00</span></p>
+        <p class="cstate"><span class="cmcap" id="cmStatus" data-key="Rhonica is dialing\u2026">Rhonica is dialing<span class="cmdots"><i>.</i><i>.</i><i>.</i></span></span><span class="t" id="cmTime">0:00</span></p>
       </div>
       <div id="cmOutcome"></div>
       <p class="lbl">Transcript</p>
@@ -374,7 +470,7 @@ function batchShell(calls, noun) {
         <div class="ctile" data-tile="${esc(c.id)}">
           <canvas class="corb"></canvas>
           <p class="cname">${esc(c.counterparty_name)}</p>
-          <p class="cstat">Dialing\u2026</p>
+          <p class="cstat">Rhonica is dialing\u2026</p>
           <p class="ctime">0:00</p>
         </div>`).join("")}</div>
     </div>`;
@@ -386,7 +482,7 @@ function batchShell(calls, noun) {
 
 function paintSingle(call, cp) {
   paintOrb($("cmOrb"), call);
-  $("cmStatus").textContent = statusOf(call, cp.display_name);
+  setCaption($("cmStatus"), call);
   $("cmTime").textContent = MMSS(callSecs(call));
   const done = call.state === "done";
 
@@ -396,8 +492,8 @@ function paintSingle(call, cp) {
     const tx = $("cmTx");
     tx.innerHTML = (call.transcript || []).map((t) => t.role === "tool"
       ? `<div class="tool">${esc(t.text)}</div>`
-      : `<div class="turn"><div class="tav ${esc(t.role)}">${t.role === "agent" ? "RD" : "\u00b7\u00b7"}</div>
-         <div><p class="who">${t.role === "agent" ? "Rho Desk" : esc(cp.display_name)}</p>
+      : `<div class="turn"><div class="tav ${esc(t.role)}">${t.role === "agent" ? "R" : "\u00b7\u00b7"}</div>
+         <div><p class="who">${t.role === "agent" ? "Rhonica" : esc(cp.display_name)}</p>
          <p class="say">${esc(t.text)}</p></div></div>`).join("")
       || '<p style="color:var(--gr2);margin:0">Connecting\u2026</p>';
     tx.scrollTop = tx.scrollHeight;
@@ -405,7 +501,7 @@ function paintSingle(call, cp) {
 
   const oc = call.outcome || {};
   $("cmOutcome").innerHTML = done && oc.summary
-    ? `<div class="banner" style="margin-bottom:16px"><p style="margin:0;font-size:12px;color:var(--mint-t);letter-spacing:.05em;text-transform:uppercase">Outcome</p>
+    ? `<div class="banner" style="margin-bottom:16px"><p style="margin:0;font-size:12px;color:var(--mint-t);letter-spacing:.05em;text-transform:uppercase">Outcome${RESULT[oc.result] ? ` \u00b7 ${esc(RESULT[oc.result].label)}` : ""}</p>
        <p style="margin:6px 0 0;font-size:16px">${esc(oc.summary)}</p>
        ${(oc.commitments || []).length ? `<div style="margin-top:10px">${(oc.commitments || []).map((c) =>
          `<div class="kv" style="border-color:rgba(8,166,138,.2)"><span>${esc(humanKey(c.label))}</span><span>${esc(String(c.value))}</span></div>`).join("")}</div>` : ""}
@@ -424,7 +520,7 @@ function paintBatch(calls) {
     if (!tile) return;
     tile.classList.toggle("done", c.state === "done");
     paintOrb(tile.querySelector("canvas"), c);
-    tile.querySelector(".cstat").textContent = statusOf(c, c.counterparty_name);
+    tile.querySelector(".cstat").textContent = statusOf(c);
     tile.querySelector(".ctime").textContent = MMSS(callSecs(c));
   });
   paintActions(done === calls.length);
@@ -444,21 +540,31 @@ function paintActions(done) {
 
 // --- open, minimize, close ------------------------------------------------
 
+// One poll a second, and each waits for the previous one to come back, so a
+// slow response can never stack requests behind it.
+const POLL_MS = 1000;
+
 function watchCalls(ids, mode, cp, noun) {
   closeDrawer();
   CALL.ids = ids; CALL.mode = mode; CALL.cp = cp; CALL.turns = -1;
-  if (CALL.timer) clearInterval(CALL.timer);
+  if (CALL.timer) clearTimeout(CALL.timer);
+  const gen = CALL.gen = CALL.gen + 1;
 
   const tick = async () => {
-    let calls;
+    let calls = null;
     try { calls = await Promise.all(ids.map((id) => api(`/api/calls/${id}`))); }
-    catch { return; }
-    if (mode === "single") paintSingle(calls[0], cp); else paintBatch(calls);
-    paintDock(calls);
-    if (calls.every((c) => c.state === "done")) {
-      clearInterval(CALL.timer); CALL.timer = null;
-      render();
+    catch { /* try again next second */ }
+    if (CALL.gen !== gen) return;            // closed, or a newer call took over
+    if (calls) {
+      if (mode === "single") paintSingle(calls[0], cp); else paintBatch(calls);
+      paintDock(calls);
+      // Stop once every call is written up and ElevenLabs has finished with it
+      // too, so a transcript that lands after an early summary gets it redone.
+      if (calls.every((c) => c.state === "done" && c.provider_status !== "processing")) {
+        CALL.timer = null; render(); return;
+      }
     }
+    CALL.timer = setTimeout(tick, POLL_MS);
   };
 
   if (mode === "single") singleShell(cp);
@@ -466,7 +572,6 @@ function watchCalls(ids, mode, cp, noun) {
   $("cscrim").classList.add("on");
   $("cdock").hidden = true;
   tick();
-  CALL.timer = setInterval(tick, 1200);
 }
 
 function paintDock(calls) {
@@ -491,7 +596,8 @@ function restoreCall() {
 }
 
 function closeCallModal() {
-  if (CALL.timer) { clearInterval(CALL.timer); CALL.timer = null; }
+  CALL.gen += 1;
+  if (CALL.timer) { clearTimeout(CALL.timer); CALL.timer = null; }
   stopOrbs();
   $("cmodal").classList.remove("on");
   $("cscrim").classList.remove("on");
@@ -598,10 +704,12 @@ function citeHtml(r) {
 function outcomeHtml(r) {
   if (!r.last_call) return `<span class="nocall">Not called yet</span>`;
   const c = r.last_call;
-  if (c.state !== "done") return `<span class="outcome"><span class="res" style="color:var(--mint-t)">On a call now</span></span>`;
+  const timeline = `<button class="tlink" data-timeline="${esc(r.id)}">Timeline</button>`;
+  if (c.state === "wrapping") return `<span class="outcome"><span class="res" style="color:var(--gr)">Writing the summary\u2026</span>${timeline}</span>`;
+  if (c.state !== "done") return `<span class="outcome"><span class="res" style="color:var(--mint-t)">On a call now</span>${timeline}</span>`;
   const label = (RESULT[c.result] || {}).label || c.result || "Completed";
   return `<span class="outcome"><span class="res">${esc(label)}</span>
-    ${c.summary ? `<p>${esc(trim(c.summary, 110))}</p>` : ""}</span>`;
+    ${c.summary ? `<p>${esc(trim(c.summary, 110))}</p>` : ""}${timeline}</span>`;
 }
 
 async function renderBoard(which) {
@@ -636,11 +744,11 @@ async function renderBoard(which) {
         <col><col style="width:188px"><col style="width:134px"><col style="width:132px"></colgroup>`;
 
   const head = collect
-    ? `<tr><th colspan="3"></th><th colspan="2" class="ai-head">Researched by Rho Desk</th><th colspan="2"></th></tr>
+    ? `<tr><th colspan="3"></th><th colspan="2" class="ai-head">Researched by Rhonica</th><th colspan="2"></th></tr>
        <tr><th>Counterparty</th><th class="num">Outstanding</th>
            <th class="num">Days overdue</th><th class="ai ai-start">What we found</th><th class="ai ai-end">Action</th>
            <th>Outcome</th><th></th></tr>`
-    : `<tr><th colspan="2"></th><th colspan="2" class="ai-head">Researched by Rho Desk</th><th colspan="2"></th></tr>
+    : `<tr><th colspan="2"></th><th colspan="2" class="ai-head">Researched by Rhonica</th><th colspan="2"></th></tr>
        <tr><th class="">Vendor</th><th class="num">Monthly</th>
            <th class="ai ai-start">What we found</th><th class="ai ai-end">Action</th>
            <th class="">Outcome</th><th class=""></th></tr>`;
@@ -764,7 +872,7 @@ const AGO = (iso) => {
   const secs = (Date.now() - new Date(iso).getTime()) / 1000;
   if (secs < 90) return "just now";
   if (secs < 5400) return Math.round(secs / 60) + " min ago";
-  if (secs < 172800) return Math.round(secs / 3600) + " hours ago";
+  if (secs < 172800) { const h = Math.round(secs / 3600); return h === 1 ? "1 hour ago" : h + " hours ago"; }
   return Math.round(secs / 86400) + " days ago";
 };
 
@@ -928,7 +1036,9 @@ async function renderCalls() {
 
   const body = rows.map((c) => {
     const oc = c.outcome || {};
-    const r = RESULT[oc.result] || { label: c.state === "live" ? "On the call now" : "Completed", tone: "" };
+    const r = RESULT[oc.result] || {
+      label: c.state === "live" ? "On the call now"
+           : c.state === "wrapping" ? "Writing the summary\u2026" : "Completed", tone: "" };
     const commitments = (oc.commitments || []).filter((x) => x && x.label);
     const turns = (c.transcript || []).filter((t) => t.role !== "tool").length;
     return `<tr class="callrow" data-callrow="${esc(c.id)}">
@@ -939,7 +1049,7 @@ async function renderCalls() {
         <td><span class="res ${esc(r.tone)}">${esc(r.label)}</span>
             ${commitments.length ? `<p class="why" style="margin-top:5px">${commitments.map((x) =>
               `${esc(humanKey(x.label))}: ${esc(String(x.value))}`).join(" · ")}</p>` : ""}</td>
-        <td class="said">${esc(oc.summary || (c.state === "live" ? "In progress" : "Nothing recorded"))}</td>
+        <td class="said">${esc(oc.summary || (c.state === "done" ? "Nothing recorded" : "In progress"))}</td>
         <td style="text-align:right"><button class="btn2 small">${turns ? `Transcript (${turns})` : "No transcript"}</button></td>
       </tr>
 `;
@@ -1107,7 +1217,9 @@ async function openCall(id) {
   const c = rows.find((x) => x.id === id);
   if (!c) return;
   const oc = c.outcome || {};
-  const r = RESULT[oc.result] || { label: c.state === "live" ? "On the call now" : "Completed", tone: "" };
+  const r = RESULT[oc.result] || {
+      label: c.state === "live" ? "On the call now"
+           : c.state === "wrapping" ? "Writing the summary\u2026" : "Completed", tone: "" };
   const commitments = (oc.commitments || []).filter((x) => x && x.label);
 
   $("drawer").classList.add("on");
@@ -1134,8 +1246,8 @@ async function openCall(id) {
         <p class="lbl">Transcript</p>
         <div class="tx">${(c.transcript || []).map((t) => t.role === "tool"
           ? `<div class="tool">${esc(t.text)}</div>`
-          : `<div class="turn"><div class="tav ${esc(t.role)}">${t.role === "agent" ? "RD" : "··"}</div>
-             <div><p class="who">${t.role === "agent" ? "Rho Desk" : esc(c.counterparty_name)}</p>
+          : `<div class="turn"><div class="tav ${esc(t.role)}">${t.role === "agent" ? "R" : "··"}</div>
+             <div><p class="who">${t.role === "agent" ? "Rhonica" : esc(c.counterparty_name)}</p>
              <p class="say">${esc(t.text)}</p></div></div>`).join("")
           || '<p style="color:var(--gr2);margin:0">Nothing was recorded for this call.</p>'}</div>
       </div>
@@ -1306,8 +1418,8 @@ async function startVoice(cp, brief) {
   const paint = (status, ended) => {
     const body = turns.map((t) => t.role === "tool"
       ? `<div class="tool">${esc(t.text)}</div>`
-      : `<div class="turn"><div class="tav ${t.role}">${t.role === "agent" ? "RD" : "··"}</div>
-         <div><p class="who">${t.role === "agent" ? "Rho Desk" : esc(cp.display_name)}</p>
+      : `<div class="turn"><div class="tav ${t.role}">${t.role === "agent" ? "R" : "··"}</div>
+         <div><p class="who">${t.role === "agent" ? "Rhonica" : esc(cp.display_name)}</p>
          <p class="say">${esc(t.text)}</p></div></div>`).join("");
     $("drawer").innerHTML = `
       <div class="dhd">
@@ -1445,6 +1557,8 @@ document.addEventListener("click", (e) => {
     render();
     return;
   }
+  const timelineBtn = e.target.closest("[data-timeline]");
+  if (timelineBtn) { e.stopPropagation(); openTimeline(timelineBtn.dataset.timeline); return; }
   const callRow = e.target.closest("[data-callrow]");
   if (callRow) { openCall(callRow.dataset.callrow); return; }
   const draftBtn = e.target.closest("[data-draft]");

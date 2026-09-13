@@ -83,7 +83,7 @@ by design, not a workaround: Rho's v1 API is read-only.
           │                 ┌───────────────┐
           └────────────────►│ 6. ACT        │
             brief + guard   │ ElevenLabs    │──► browser voice (WebRTC)
-            rails + dossier │ agent "Ellis" │──► phone (needs a number)
+            rails + dossier │ agent Rhonica │──► phone (needs a number)
                             └───────┬───────┘
                                     │ get_invoice_details (client tool)
                                     ▼
@@ -216,7 +216,7 @@ Ordered by value per hour.
   dates, seat utilisation and auto-renew traps are bigger money.
 - **The counterparty graph.** Shared investors, shared customers, common
   exposure. Concentration risk is currently one number.
-- **Inbound.** Ellis answers rather than calls, and handles "when will you pay
+- **Inbound.** Rhonica answers rather than calls, and handles "when will you pay
   us" from your vendors.
 - **Confidence, shown.** Every posture rests on a heuristic. Making the
   reasoning visible and correctable is the difference between a tool people

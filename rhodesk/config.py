@@ -82,6 +82,10 @@ FIXTURE_DAYS_AGO = int(_flag("FIXTURE_DAYS_AGO", "0"))
 RESEARCH_HOUR = int(_flag("RESEARCH_HOUR", "17"))
 SCHEDULER_ENABLED = _flag("SCHEDULER_ENABLED", "true").lower() in ("1", "true", "yes")
 
+# Rhonica's sense of "now": the time she is told it is, and how she says how
+# long ago she last called. The ElevenLabs agent is set to Eastern too.
+TIMEZONE = _flag("TIMEZONE", "America/New_York")
+
 
 def reading_date():
     """The date the desk is reading the ledger as of. Today, unless a demo has

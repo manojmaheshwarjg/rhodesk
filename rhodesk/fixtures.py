@@ -108,6 +108,21 @@ PEOPLE = [("Ethan", "Parker"), ("Maya", "Chen"), ("Lucas", "Bennett"),
           ("Priya", "Raman"), ("Noah", "Gill"), ("Zara", "Okafor")]
 
 
+# Invoice references are one letter and three digits with no separator: R204.
+# An INV-2026-0001 style reference spends three syllables and a year before
+# the part anyone needs, and every dash is something a voice agent is tempted
+# to read out. R because it sits in none of the letter groups that blur
+# together on a narrowband phone line (B D E P T V, A J K, F S, M N).
+INVOICE_PREFIX = "R"
+INVOICE_BASE = 200
+
+
+def invoice_ref(seq: int) -> str:
+    """R201 for the first invoice. Offset so every reference has three digits
+    and no leading zero, which reads as a number rather than a code."""
+    return f"{INVOICE_PREFIX}{INVOICE_BASE + seq}"
+
+
 def _uuid(prefix: int, n: int) -> str:
     return f"{prefix:08x}-0000-4000-8000-{n:012d}"
 
@@ -271,7 +286,7 @@ def generate(seed: int = SEED) -> dict:
                                    "emails": [f"accounts@{c['domain']}"], "user_id": None})
 
             invoices.append({
-                "id": iid, "invoice_number": f"INV-{issued.year}-{inv_seq:04d}",
+                "id": iid, "invoice_number": invoice_ref(inv_seq),
                 "customer": {"id": cid},
                 "date": issued.isoformat(), "due_date": due.isoformat(),
                 "status": status, "total": {"amount": cents, "currency": CURRENCY},
